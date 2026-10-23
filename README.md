@@ -6,7 +6,7 @@ This is a functional development version, with real database persistence. It is 
 
 ## Current product flow
 
-The latest owner reference is [DANXALIYE App](https://claude.ai/artifact/YXtg4LHL7vwCt3hAN5t1KK#page-dcb81aee8d83): **DANXALIYE — Baahidaada, Xalkeeda.** New home, catalog, request and tracking screens use Somali and a navy/gold theme. See `docs/danxaliye-reference.md` for the mapped features and limits.
+The latest owner reference is [DANXALIYE App](https://claude.ai/artifact/YXtg4LHL7vwCt3hAN5t1KK#page-dcb81aee8d83): **DANXALIYE — Baahidaada, Xalkeeda.** New home, catalog, request and tracking screens use Somali and a navy/orange theme. See `docs/danxaliye-reference.md` for the mapped features and limits.
 
 - Browse 16 services grouped into Gaadiid, Guriga and Farsamo.
 - Request a service without first choosing a professional: description, private optional photo, location, Hadda/Maanta/Berri, and Mobile Money/Cash preference.
@@ -15,7 +15,7 @@ The latest owner reference is [DANXALIYE App](https://claude.ai/artifact/YXtg4LH
 - Customers can edit before departure and cancel before work starts. Tracking refreshes automatically.
 - The original professional directory, direct appointments, chat, reviews and saved professionals remain available as secondary capabilities.
 
-Mobile Money is a recorded preference, not a processed payment. No GPS tracking or ETA calculation is connected. The exact logo PDF was inaccessible; active branding uses an explicitly interim wordmark and native icon, awaiting the source logo.
+Mobile Money is a recorded preference, not a processed payment. No GPS tracking or ETA calculation is connected. The original DANXALIYE logo is extracted from the supplied high-quality PDF and used throughout the web/mobile app and launcher icons.
 
 ## Open the projects
 
@@ -113,7 +113,7 @@ The integration suite creates test accounts, profiles, messages, favorites, repo
 
 ## Design
 
-A responsive navy-and-gold DANXALIYE service-request interface based on the latest owner reference, service cards, clear availability labels, keyboard-accessible forms, mobile navigation, and empty/error states. The Flutter app uses Material 3 and the same DANXALIYE palette. No paid assets or remote fonts are needed.
+A responsive navy-and-orange DANXALIYE service-request interface based on the latest owner reference, service cards, clear availability labels, keyboard-accessible forms, mobile navigation, and empty/error states. The Flutter app uses Material 3 and the same DANXALIYE palette. No paid assets or remote fonts are needed.
 
 ## Production handoff
 

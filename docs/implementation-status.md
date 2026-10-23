@@ -10,7 +10,7 @@ Your selected stack supersedes the React/Node/PostgreSQL suggestions in the prod
 - Participant/admin-only photo access, signature checks, private disk storage outside wwwroot, and a persistent Docker photo volume.
 - Administrator assignment and visit-fee editing in Dispatch; only approved, accepting professionals in the requested category may be assigned.
 - Transactional status changes, event timeline, customer edits/cancellation, professional progress updates, notifications, private chat and call actions.
-- Interim DANXALIYE wordmark and app icon. High-quality source logo remains unavailable.
+- Original DANXALIYE logo from the supplied PDF, web/mobile logo assets, favicon and Android/iOS launcher icons. Home popular-service grid and catalog subtitle match the supplied PDF screens.
 
 ## Working development features
 

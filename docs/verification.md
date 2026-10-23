@@ -7,4 +7,8 @@
 - Browser loaded the Somali home and inspected layout. The captured preview reflects the available browser panel; narrow-screen rendering and physical mobile device testing still require device QA.
 - No fake arrival estimates, GPS position, review scores or payment confirmation are used.
 
-The high-quality logo PDF is unavailable; the active identity is an explicitly interim wordmark and native monogram. iOS signing/build, physical-device phone/gallery behavior, full image decoding/malware scanning, payment processing and map/ETA integration were not verified/implemented. The new service-request flow is not a timed appointment and does not reserve a professional’s calendar.
+The original high-quality logo has now replaced the interim identity. iOS signing/build, physical-device phone/gallery behavior, full image decoding/malware scanning, payment processing and map/ETA integration were not verified/implemented. The new service-request flow is not a timed appointment and does not reserve a professional’s calendar.
+
+## Original PDF artwork refinement
+
+All five supplied PDFs were read. All four screen PDFs were rendered and visually inspected. The embedded full-resolution original logo was extracted directly from its PDF. Web build, Flutter analysis and Android APK build are checked again for this styling/asset update; business behavior is unchanged. iOS icon files are generated but an iOS build is still unverified.

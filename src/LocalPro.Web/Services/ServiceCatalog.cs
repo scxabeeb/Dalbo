@@ -27,6 +27,7 @@ public static class ServiceCatalog {
  for(var i=0;i<Items.Length;i++){var x=Items[i];var c=cats.FirstOrDefault(c=>c.Name==x.Name);if(c==null){c=new(){Name=x.Name};db.Categories.Add(c);}c.Icon=x.Icon;c.Group=x.Group;c.Description=x.Description;c.Active=true;c.SortOrder=i;}
  await db.SaveChangesAsync();
  }
+ public static string IconKey(string name)=>name switch{"Gaadiid Dalbo"=>"car","Bajaaj Dalbo"=>"tuktuk","Koronto-yaqaan"=>"bolt","Tuubiiste"=>"drop","Alxanle"=>"fire","Rinjiile"=>"paint","AC & Qaboojiye"=>"snow","Nijaar"=>"hammer","Solar"=>"sun","Nadaafad"=>"spark","Mechanic"=>"wrench","CCTV & Amni"=>"cctv","Electronics"=>"monitor","Rarid & Guuritaan"=>"truck","Delivery"=>"box","Dhirayn & Beer"=>"leaf",_=>"grid"};
  public static string Status(ServiceRequestStatus s)=>s switch{ServiceRequestStatus.Received=>"Dalabka waa la helay",ServiceRequestStatus.Assigned=>"Farsamoyaqaan ayaa loo xilsaaray",ServiceRequestStatus.OnTheWay=>"Jidka ayuu ku jiraa",ServiceRequestStatus.InProgress=>"Shaqada waa socotaa",ServiceRequestStatus.Completed=>"Shaqada waa la dhammeeyay",_=>"Dalabka waa la joojiyay"};
  public static string When(string s)=>s switch{"Now"=>"Hadda","Today"=>"Maanta",_=>"Berri"};
 }

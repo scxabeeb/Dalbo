@@ -11,33 +11,7 @@ import 'main.dart';
 class DanxaliyeBrand extends StatelessWidget {
   const DanxaliyeBrand({super.key});
   @override
-  Widget build(BuildContext c) => const Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(Icons.home_repair_service_rounded, color: brandOrange, size: 29),
-      SizedBox(width: 8),
-      Flexible(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'DANXALIYE',
-              style: TextStyle(
-                color: brandNavy,
-                fontSize: 18,
-                letterSpacing: .7,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            Text(
-              'Baahidaada, Xalkeeda.',
-              style: TextStyle(color: muted, fontSize: 8, letterSpacing: .4),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
+  Widget build(BuildContext c) => Image.asset('assets/brand/danxaliye-logo.png',width:120,height:60,fit:BoxFit.contain,semanticLabel:'DANXALIYE — Baahidaada, Xalkeeda.');
 }
 
 IconData serviceIcon(String name) => switch (name) {
@@ -71,7 +45,7 @@ class ServiceIcon extends StatelessWidget {
       color: mint,
       borderRadius: BorderRadius.circular(12),
     ),
-    child: Icon(serviceIcon(name), color: const Color(0xFFA66B2E), size: 23),
+    child: Icon(serviceIcon(name), color: const Color(0xFFB84A00), size: 23),
   );
 }
 
@@ -101,7 +75,7 @@ class SectionTitle extends StatelessWidget {
             onPressed: onTap,
             child: Text(
               action!,
-              style: const TextStyle(color: Color(0xFFA66B2E), fontSize: 11),
+              style: const TextStyle(color: Color(0xFFB84A00), fontSize: 11),
             ),
           ),
       ],
@@ -112,19 +86,21 @@ class SectionTitle extends StatelessWidget {
 class ServicesGrid extends StatelessWidget {
   final List<dynamic> categories;
   final Future<void> Function()? onReturn;
-  const ServicesGrid(this.categories, {super.key, this.onReturn});
+  final bool home;
+  const ServicesGrid(this.categories, {super.key, this.onReturn,this.home=false});
   @override
   Widget build(BuildContext c) => GridView.builder(
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: MediaQuery.sizeOf(c).width > 650 ? 4 : 3,
+      crossAxisCount: home || MediaQuery.sizeOf(c).width > 650 ? 4 : 3,
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       mainAxisExtent: 112,
     ),
-    itemCount: categories.length,
+    itemCount: categories.length+(home?1:0),
     itemBuilder: (c, i) {
+      if(home&&i==categories.length){return Material(color:Colors.white,borderRadius:BorderRadius.circular(14),child:InkWell(borderRadius:BorderRadius.circular(14),onTap:()=>open(c,Scaffold(appBar:AppBar(title:const Text('16 Adeeg')),body:const ServiceCatalogScreen())),child:const Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.grid_view_outlined,color:brandNavy,size:29),SizedBox(height:12),Text('Dhammaan',style:TextStyle(fontSize:10,color:ink,fontWeight:FontWeight.w600))])));}
       final cat = Map<String, dynamic>.from(categories[i]);
       return Material(
         color: Colors.white,
@@ -283,7 +259,7 @@ class _ServiceHomeState extends State<ServiceHome> {
                   const Text(
                     '16 ADEEG · HAL APP',
                     style: TextStyle(
-                      color: Color(0xFFE6BA8D),
+                      color: Color(0xFFFFD4B6),
                       fontSize: 9,
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.w700,
@@ -346,7 +322,7 @@ class _ServiceHomeState extends State<ServiceHome> {
         else if (categories == null)
           const Center(child: CircularProgressIndicator())
         else
-          ServicesGrid(categories!.take(8).toList(), onReturn: load),
+          ServicesGrid(categories!.where((c)=>['Gaadiid Dalbo','Bajaaj Dalbo','Koronto-yaqaan','Tuubiiste','AC & Qaboojiye','Nadaafad','Mechanic'].contains(c['name'])).toList(), onReturn: load,home:true),
         const SizedBox(height: 25),
         SectionTitle(
           'Dalabkaaga socda',
@@ -446,7 +422,7 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
                 ),
               ),
               const Text(
-                'Dooro adeegga aad u baahan tahay',
+                'Hal meel ka hel adeeg kasta',
                 style: TextStyle(color: Color(0xFFCFD3E3), fontSize: 12),
               ),
               const SizedBox(height: 16),
@@ -467,7 +443,7 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
                               ),
                             ),
                             selected: group == g,
-                            selectedColor: const Color(0xFFAB6C2B),
+                            selectedColor: const Color(0xFFB64B00),
                             onSelected: (_) => setState(() => group = g),
                           ),
                         ),
@@ -806,7 +782,7 @@ class _ServiceRequestFormState extends State<ServiceRequestForm> {
         const SizedBox(height: 18),
         FilledButton(
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFFCC843A),
+            backgroundColor: const Color(0xFFFF6B0B),
             foregroundColor: const Color(0xFF192244),
           ),
           onPressed: busy ? null : submit,

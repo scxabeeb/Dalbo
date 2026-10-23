@@ -12,4 +12,4 @@ Original artwork supplied by the project owner. `dalbo-logo.png` and `dalbo-app-
 
 Run `python3 scripts/prepare-brand-assets.py` with Pillow installed to regenerate derived files. The script removes empty padding, resizes, and composites backgrounds; it does not redraw the supplied designs. Native package identifiers and database names are retained for compatibility.
 
-The active product is now DANXALIYE. These originals are archived for provenance. See docs/danxaliye-reference.md for the interim active wordmark and native icon. Do not run the historical prepare-brand-assets.py script to regenerate current launchers.
+The active product is now DANXALIYE. These originals are archived for provenance. See docs/danxaliye-reference.md for the current original-logo assets. Do not run the historical prepare-brand-assets.py script to regenerate current launchers.

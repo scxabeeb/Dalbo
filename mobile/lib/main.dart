@@ -4,12 +4,12 @@ import 'package:flutter/services.dart';
 import 'api.dart';
 import 'services_app.dart';
 
-const brandNavy = Color(0xFF232D5A);
-const brandOrange = Color(0xFFCC843A);
-const ink = Color(0xFF232D5A);
+const brandNavy = Color(0xFF0E305D);
+const brandOrange = Color(0xFFFF6B0B);
+const ink = Color(0xFF0E305D);
 const muted = Color(0xFF697382);
 const cream = Color(0xFFF5F6FA);
-const mint = Color(0xFFF9F0E5);
+const mint = Color(0xFFFFF1E7);
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const DanxaliyeApp());
@@ -121,6 +121,7 @@ class _ShellState extends State<Shell> {
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(
       title: const DanxaliyeBrand(),
+      toolbarHeight: 76,
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 18),
