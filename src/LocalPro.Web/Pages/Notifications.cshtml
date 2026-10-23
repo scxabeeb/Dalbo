@@ -1,0 +1,4 @@
+@page
+@model NotificationsModel
+@{ViewData["Title"]="Your updates";}
+<div class="page"><div class="section-heading"><div class="page-heading"><span class="eyebrow muted">KEEPING YOU IN THE LOOP</span><h1>Your updates.</h1><p>Messages and appointment changes, all together.</p></div><form method="post"><button class="btn small outline" type="submit">Mark all as read</button></form></div>@if(Model.Items.Count==0){<div class="empty"><h3>You’re all caught up.</h3><p>New messages and appointment updates will appear here.</p></div>}@foreach(var n in Model.Items){<a class="panel admin-row" href="@n.Link"><div><span class="status">@(n.Read?"Read":"New")</span><h3>@n.Text</h3><p class="notice">@Marketplace.ToLocal(n.CreatedUtc).ToString("dd MMM HH:mm") EAT</p></div><span>↗</span></a>}</div>

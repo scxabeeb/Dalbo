@@ -1,0 +1,4 @@
+@page
+@model FavoritesModel
+@{ViewData["Title"]="Saved professionals";}
+<div class="page"><div class="page-heading"><span class="eyebrow muted">GOOD PEOPLE TO KEEP IN MIND</span><h1>Your saved professionals.</h1></div>@if(Model.Items.Count==0){<div class="empty"><h3>Your shortlist starts here.</h3><p>Save a professional from their profile to find them again.</p><a class="btn" asp-page="/Index">Find a professional ↗</a></div>}@foreach(var p in Model.Items){<div class="panel admin-row"><div><h3>@p.Name</h3><p>@p.Category.Name · @p.Neighborhood, @p.City</p></div><div class="actions"><a class="btn small" asp-page="/Professional/Details" asp-route-id="@p.Id">View profile ↗</a><form method="post"><input type="hidden" name="pro" value="@p.Id"/><button class="btn small outline" type="submit">Remove</button></form></div></div>}</div>

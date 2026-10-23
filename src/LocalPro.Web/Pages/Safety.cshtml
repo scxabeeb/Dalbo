@@ -1,0 +1,4 @@
+@page
+@model SafetyModel
+@{ViewData["Title"]="Blocked accounts";}
+<div class="page"><div class="page-heading"><h1>Blocked accounts.</h1><p>Messages between these accounts and yours are disabled.</p></div>@if(Model.Items.Count==0){<div class="empty"><p>You have no blocked accounts.</p></div>}@foreach(var b in Model.Items){<div class="panel admin-row"><strong>@b.Name</strong><form method="post"><input type="hidden" name="block" value="@b.Id"/><button class="btn small outline" type="submit">Unblock messages</button></form></div>}</div>

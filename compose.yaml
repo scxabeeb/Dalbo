@@ -1,0 +1,37 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: localpro
+      MYSQL_USER: localpro
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - localpro_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  web:
+    build:
+      context: .
+      dockerfile: src/LocalPro.Web/Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 8080
+      ConnectionStrings__Default: Server=mysql;Port=3306;Database=localpro;User=localpro;Password=${MYSQL_PASSWORD}
+      SeedDemo: "true"
+      DemoPassword: ${DEMO_PASSWORD:?Set DEMO_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5080:8080"
+    volumes:
+      - localpro_keys:/root/.aspnet/DataProtection-Keys
+volumes:
+  localpro_mysql:
+  localpro_keys:

@@ -1,0 +1,109 @@
+# LocalPro
+
+A local professional services marketplace built with **ASP.NET Core Razor Pages**, a shared **ASP.NET Core API**, **Flutter** for Android/iOS, and **MySQL through EF Core/Pomelo**. The working launch area is Mogadishu, with USD estimates and East Africa Time (UTC+3).
+
+This is a functional development version, with real database persistence. It is not yet the complete production release described by the source brief. The feature matrix below records the implementation boundary explicitly.
+
+## Open the projects
+
+- `src/LocalPro.Web`: Razor Pages, Identity, API, business rules, EF Core migrations, administration, CSS and JavaScript.
+- `mobile`: Flutter application, generated Android/iOS projects, API client, secure refresh-token storage and tests.
+- `tests/smoke_test.py`: integration checks against a running application and real MySQL.
+- `docs/product-brief.md`: original product brief. Its technology suggestions are superseded by your selected stack.
+- `docs/implementation-status.md`: implemented features and work remaining.
+- `docs/api.md`: API routes and authentication.
+
+## Quick start with Docker
+
+Requires Docker Compose.
+
+```sh
+cp .env.example .env
+# Edit .env and choose three unique strong passwords.
+docker compose up --build
+```
+
+Open [LocalPro](http://localhost:5080). This Compose configuration is for local development: it enables demo accounts and binds ports to loopback.
+
+All demo accounts use your `DEMO_PASSWORD` from `.env`:
+
+| Account | Purpose |
+| --- | --- |
+| customer@localpro.test | Customer |
+| pro1@localpro.test through pro6@localpro.test | Seed professionals |
+| admin@localpro.test | Administration |
+
+Demo profiles are fictional and contain no working contact numbers. The application does not mark demo email addresses as verified and does not invent review ratings. Register a real professional and publish a business phone to test contact actions.
+
+Database data and Identity data-protection keys persist in Docker volumes. Use `docker compose down` to stop the development environment. Do not remove the data volume if you want to keep your data.
+
+## Run the web application directly
+
+Development baseline: .NET SDK 9, EF Core 9.0.9, Pomelo 9.0.0 and MySQL 8.4. This matches the installed SDK used to build the project. Before production, upgrade the runtime to a currently supported .NET release and revalidate the MySQL provider. The machine used for verification had MySQL 9.5; deployment configuration targets MySQL 8.4.
+
+Create a database and application user on your MySQL server. Then set configuration through environment variables or .NET user secrets:
+
+```sh
+export ConnectionStrings__Default='Server=127.0.0.1;Port=3306;Database=localpro;User=localpro;Password=YOUR_PASSWORD'
+export SeedDemo=true
+export DemoPassword='YOUR_STRONG_DEVELOPMENT_PASSWORD'
+bash scripts/run-web.sh
+```
+
+The app applies checked-in EF Core migrations on startup and inserts service categories. Demo seed runs only in the Development environment when `SeedDemo=true`; the demo password must be supplied. Never use the demo seed for a public deployment. The connection-string value in `appsettings.json` is a placeholder.
+
+To add a migration after a model change:
+
+```sh
+dotnet tool restore
+dotnet ef migrations add YourChange --project src/LocalPro.Web
+```
+
+A design-time context factory allows migration generation without connecting to a live server.
+
+## Run the Flutter application
+
+Requires Flutter 3.38+ and configured Android/iOS build tools.
+
+```sh
+cd mobile
+flutter pub get
+flutter run --dart-define=API_URL=http://10.0.2.2:5080
+```
+
+`10.0.2.2` reaches the host machine from the Android emulator. Use `http://127.0.0.1:5080` for an iOS simulator after configuring a local debug transport exception, or a reachable HTTPS URL for a physical device. Do not bypass certificate validation. Production builds must use HTTPS. Android cleartext access is permitted only in the debug manifest.
+
+```sh
+flutter build apk --debug --dart-define=API_URL=http://10.0.2.2:5080
+flutter build appbundle --release --dart-define=API_URL=https://YOUR_API_HOST
+```
+
+The release command requires your signing setup. Configure iOS signing and Keychain Sharing as required by `flutter_secure_storage` before archiving in Xcode. iOS signing and store submission have not been performed.
+
+## Verification
+
+```sh
+dotnet build src/LocalPro.Web
+cd mobile
+flutter analyze
+flutter test
+```
+
+For the API integration suite, start the server with demo seed against a **disposable database**, then run from the project root:
+
+```sh
+export LOCALPRO_PASSWORD="$DemoPassword"
+python3 tests/smoke_test.py
+```
+
+The integration suite creates test accounts, profiles, messages, favorites, reports, blocks and appointments. It checks search, public DTO privacy, protected routes, approval gating, conversation isolation, invalid bookings, competing confirmations, rescheduling permissions and review eligibility.
+
+## Design
+
+A responsive green-and-cream interface with a custom house illustration, service cards, clear availability labels, keyboard-accessible forms, mobile navigation, and empty/error states. The Flutter app uses Material 3 and the same palette. No paid assets or remote fonts are needed.
+
+## Production handoff
+
+Use `docs/implementation-status.md` for the remaining scope. In particular, contact verification and recovery delivery, image uploads, push notifications, administrator MFA enforcement, richer scheduling, support/privacy workflows and operational hardening require work before public launch. No payment gateway is included; customers pay professionals directly.
+
+Persist Identity data-protection keys across restarts and replicas. Terminate HTTPS at a trusted reverse proxy, configure forwarded headers for that proxy, use least-privilege database credentials and a deliberate migration deployment step, configure backups and monitoring, and validate the runtime/provider versions before deployment.

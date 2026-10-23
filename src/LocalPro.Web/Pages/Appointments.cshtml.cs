@@ -1,0 +1,5 @@
+using System.Security.Claims;using LocalPro.Web.Domain;using LocalPro.Web.Services;using Microsoft.AspNetCore.Authorization;using Microsoft.AspNetCore.Mvc;using Microsoft.AspNetCore.Mvc.RazorPages;
+namespace LocalPro.Web.Pages;
+[Authorize]public class AppointmentsModel(Marketplace m):PageModel{public List<Appointment> Items{get;set;}=[];public string UserId=>User.FindFirstValue(ClaimTypes.NameIdentifier)!;public async Task OnGetAsync()=>Items=await m.Appointments(UserId);
+ public async Task<IActionResult> OnPostActionAsync(int id,string action,DateTime? localStart){try{await m.Transition(UserId,id,action,localStart.HasValue?Marketplace.ToUtc(localStart.Value):null);TempData["Success"]="Appointment updated.";}catch(RuleException ex){TempData["Error"]=ex.Message;}return RedirectToPage();}
+ public async Task<IActionResult> OnPostReviewAsync(int id,int rating,string text){try{await m.Review(UserId,id,rating,text??"");TempData["Success"]="Thank you for sharing your experience.";}catch(RuleException ex){TempData["Error"]=ex.Message;}return RedirectToPage();}}

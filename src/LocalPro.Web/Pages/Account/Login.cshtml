@@ -1,0 +1,4 @@
+@page
+@model LocalPro.Web.Pages.Account.LoginModel
+@{ViewData["Title"]="Welcome back";}
+<section class="auth panel"><span class="eyebrow muted">GOOD TO SEE YOU AGAIN</span><h1>Welcome back.</h1><p>Your next great connection starts here.</p><form method="post"><div asp-validation-summary="All"></div><input type="hidden" asp-for="ReturnUrl"/><label class="field"><span>Email address</span><input asp-for="Email" type="email" autocomplete="username" required/></label><label class="field"><span>Password</span><input asp-for="Password" type="password" autocomplete="current-password" required/></label><button class="btn full" type="submit">Log in ↗</button></form><p>New around here? <a class="text-link" asp-page="Register">Create an account</a></p></section>
