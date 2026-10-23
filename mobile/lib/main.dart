@@ -2,23 +2,24 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'api.dart';
+import 'services_app.dart';
 
-const brandNavy = Color(0xFF16202E);
-const brandOrange = Color(0xFFFF6A13);
-const ink = Color(0xFF16202E);
+const brandNavy = Color(0xFF232D5A);
+const brandOrange = Color(0xFFCC843A);
+const ink = Color(0xFF232D5A);
 const muted = Color(0xFF697382);
-const cream = Color(0xFFF7F7F9);
-const mint = Color(0xFFFFF1E8);
+const cream = Color(0xFFF5F6FA);
+const mint = Color(0xFFF9F0E5);
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const DalboApp());
+  runApp(const DanxaliyeApp());
 }
 
-class DalboApp extends StatelessWidget {
-  const DalboApp({super.key});
+class DanxaliyeApp extends StatelessWidget {
+  const DanxaliyeApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Dalbo',
+    title: 'DANXALIYE',
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       useMaterial3: true,
@@ -119,13 +120,13 @@ class _ShellState extends State<Shell> {
   @override
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(
-      title: Image.asset('assets/brand/dalbo-logo.png', width: 145, height: 42, fit: BoxFit.contain, semanticLabel: 'Dalbo'),
+      title: const DanxaliyeBrand(),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 18),
           child: Chip(
             avatar: const Icon(Icons.location_on_outlined, size: 15),
-            label: const Text('Mogadishu', style: TextStyle(fontSize: 11)),
+            label: const Text('Garowe', style: TextStyle(fontSize: 11)),
             backgroundColor: cream,
             side: BorderSide.none,
           ),
@@ -135,30 +136,27 @@ class _ShellState extends State<Shell> {
     body: loading
         ? const Center(child: CircularProgressIndicator())
         : switch (tab) {
-            0 => const Discover(),
-            1 => const Inbox(),
-            2 => const Bookings(),
+            0 => const ServiceHome(),
+            1 => const ServiceCatalogScreen(),
+            2 => const ServiceOrders(),
             _ => Account(onChanged: () => setState(() {})),
           },
     bottomNavigationBar: NavigationBar(
       selectedIndex: tab,
       onDestinationSelected: (v) => setState(() => tab = v),
       destinations: const [
+        NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Hoyga'),
         NavigationDestination(
-          icon: Icon(Icons.search_rounded),
-          label: 'Discover',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.chat_bubble_outline_rounded),
-          label: 'Messages',
+          icon: Icon(Icons.grid_view_outlined),
+          label: 'Adeegyada',
         ),
         NavigationDestination(
           icon: Icon(Icons.calendar_month_outlined),
-          label: 'Appointments',
+          label: 'Dalabyada',
         ),
         NavigationDestination(
           icon: Icon(Icons.person_outline_rounded),
-          label: 'Profile',
+          label: 'Akoonka',
         ),
       ],
     ),
@@ -671,10 +669,10 @@ class _AuthPageState extends State<AuthPage> {
     body: ListView(
       padding: const EdgeInsets.all(28),
       children: [
-        Image.asset('assets/brand/dalbo-mark.png',height:70,semanticLabel:'Dalbo'),
+        const DanxaliyeBrand(),
         const SizedBox(height: 30),
         Text(
-          register ? 'A good place to start.' : 'Welcome back.',
+          register ? 'Ku soo biir DANXALIYE.' : 'Soo dhowow.',
           style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.w700,
@@ -682,23 +680,20 @@ class _AuthPageState extends State<AuthPage> {
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
-          'Your next great connection starts here.',
-          style: TextStyle(color: muted),
-        ),
+        const Text('Baahidaada, Xalkeeda.', style: TextStyle(color: muted)),
         const SizedBox(height: 30),
         TextField(
           controller: email,
           keyboardType: TextInputType.emailAddress,
           autofillHints: const [AutofillHints.email],
-          decoration: const InputDecoration(labelText: 'Email address'),
+          decoration: const InputDecoration(labelText: 'Cinwaanka iimaylka'),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: password,
           obscureText: true,
           autofillHints: const [AutofillHints.password],
-          decoration: const InputDecoration(labelText: 'Password'),
+          decoration: const InputDecoration(labelText: 'Furaha sirta'),
         ),
         const SizedBox(height: 10),
         if (register) ...[
@@ -716,7 +711,7 @@ class _AuthPageState extends State<AuthPage> {
             ),
           ),
           const Text(
-            'Dalbo stores account, message and booking data. Public business contacts are optional. Pay professionals directly. Profile approval does not certify qualifications. This is a development preview.',
+            'DANXALIYE stores account, message and booking data. Public business contacts are optional. Pay professionals directly. Profile approval does not certify qualifications. This is a development preview.',
             style: TextStyle(fontSize: 11, color: muted),
           ),
         ],
@@ -730,10 +725,10 @@ class _AuthPageState extends State<AuthPage> {
           onPressed: busy ? null : submit,
           child: Text(
             busy
-                ? 'Please wait…'
+                ? 'Fadlan sug…'
                 : register
-                ? 'Create account ↗'
-                : 'Log in ↗',
+                ? 'Isdiiwaangeli ↗'
+                : 'Soo gal ↗',
           ),
         ),
         TextButton(
@@ -742,9 +737,7 @@ class _AuthPageState extends State<AuthPage> {
             error = null;
           }),
           child: Text(
-            register
-                ? 'Already a member? Log in'
-                : 'New around here? Create an account',
+            register ? 'Akoon ma leedahay? Soo gal' : 'Akoon cusub samee',
           ),
         ),
       ],
@@ -1494,7 +1487,7 @@ class Account extends StatelessWidget {
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: () => open(c, const ProfessionalEditor()),
-                child: const Text('My professional profile ↗'),
+                child: const Text('Akoonka xirfadlaha ↗'),
               ),
             ],
           ),
@@ -1502,29 +1495,70 @@ class Account extends StatelessWidget {
         const SizedBox(height: 20),
         ListTile(
           leading: const Icon(Icons.favorite_border, color: brandNavy),
-          title: const Text('Saved professionals'),
+          title: const Text('Xirfadlayaasha la kaydiyay'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => open(c, const SavedPage()),
         ),
         ListTile(
           leading: const Icon(Icons.notifications_none, color: brandNavy),
-          title: const Text('Your updates'),
+          title: const Text('Ogeysiisyada'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => open(c, const UpdatesPage()),
+        ),
+        ListTile(
+          leading: const Icon(Icons.chat_bubble_outline, color: brandNavy),
+          title: const Text('Fariimaha'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => open(
+            c,
+            Scaffold(
+              appBar: AppBar(title: const Text('Fariimaha')),
+              body: const Inbox(),
+            ),
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.people_outline, color: brandNavy),
+          title: const Text('Xirfadlayaasha'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => open(
+            c,
+            Scaffold(
+              appBar: AppBar(title: const Text('Xirfadlayaasha')),
+              body: const Discover(),
+            ),
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.event_outlined, color: brandNavy),
+          title: const Text('Ballamaha'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => open(
+            c,
+            Scaffold(
+              appBar: AppBar(title: const Text('Ballamaha')),
+              body: const Bookings(),
+            ),
+          ),
         ),
         const SizedBox(height: 25),
         const Text(
           'Development preview. Payments are arranged directly with professionals. Account verification and production support are not enabled yet.',
           style: TextStyle(fontSize: 12, color: muted),
         ),
-        ListTile(leading:const Icon(Icons.block_outlined,color:brandNavy),title:const Text('Blocked professionals'),trailing:const Icon(Icons.chevron_right),onTap:()=>open(c,const BlocksPage())),
+        ListTile(
+          leading: const Icon(Icons.block_outlined, color: brandNavy),
+          title: const Text('Xirfadlayaasha la xannibay'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => open(c, const BlocksPage()),
+        ),
         const SizedBox(height: 30),
         OutlinedButton(
           onPressed: () async {
             await api.logout();
             onChanged();
           },
-          child: const Text('Sign out'),
+          child: const Text('Ka bax'),
         ),
       ],
     );
@@ -1539,7 +1573,7 @@ class ProfessionalEditor extends StatefulWidget {
 
 class _ProfessionalEditorState extends State<ProfessionalEditor> {
   final name = TextEditingController(),
-      city = TextEditingController(text: 'Mogadishu'),
+      city = TextEditingController(text: 'Garowe'),
       area = TextEditingController(),
       bio = TextEditingController(),
       phone = TextEditingController(),
@@ -1781,7 +1815,7 @@ class SignInPanel extends StatelessWidget {
           const Icon(Icons.waving_hand_outlined, color: brandNavy, size: 50),
           const SizedBox(height: 20),
           const Text(
-            'Make yourself at home.',
+            'Ku soo dhowow DANXALIYE.',
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
@@ -1790,7 +1824,7 @@ class SignInPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Sign in to chat, book appointments and grow your local connections.',
+            'Soo gal si aad u dalbato adeeg, ula hadasho xirfadle, oo aad ula socoto dalabkaaga.',
             textAlign: TextAlign.center,
             style: TextStyle(color: muted),
           ),
@@ -1800,7 +1834,7 @@ class SignInPanel extends StatelessWidget {
               await open(c, const AuthPage());
               onSignedIn();
             },
-            child: const Text('Log in or create account ↗'),
+            child: const Text('Soo gal ama isdiiwaangeli ↗'),
           ),
         ],
       ),
@@ -1841,7 +1875,7 @@ class _SavedPageState extends State<SavedPage> {
 
   @override
   Widget build(BuildContext c) => Scaffold(
-    appBar: AppBar(title: const Text('Saved professionals')),
+    appBar: AppBar(title: const Text('Xirfadlayaasha la kaydiyay')),
     body: error != null
         ? ErrorPanel(message: error!, retry: load)
         : items == null
@@ -1901,7 +1935,7 @@ class _UpdatesPageState extends State<UpdatesPage> {
   @override
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(
-      title: const Text('Your updates'),
+      title: const Text('Ogeysiisyada'),
       actions: [
         IconButton(
           tooltip: 'Mark all as read',
@@ -2013,7 +2047,10 @@ class _ReportPageState extends State<ReportPage> {
                       body: {'reason': reason.text},
                     );
                     if (block) {
-                      await api.request('/block/${widget.pro}', body: {'blocked':true});
+                      await api.request(
+                        '/block/${widget.pro}',
+                        body: {'blocked': true},
+                      );
                     }
                     if (c.mounted) {
                       toast(c, 'Your report was sent to the administrator.');
@@ -2036,5 +2073,78 @@ class _ReportPageState extends State<ReportPage> {
   );
 }
 
-class BlocksPage extends StatefulWidget{const BlocksPage({super.key});@override State<BlocksPage> createState()=>_BlocksPageState();}
-class _BlocksPageState extends State<BlocksPage>{List<dynamic>? items;String? error;@override void initState(){super.initState();load();}Future<void> load()async{try{final data=await api.request('/blocks');if(mounted){setState((){items=data;error=null;});}}catch(e){if(mounted){setState(()=>error='$e');}}}@override Widget build(BuildContext c)=>Scaffold(appBar:AppBar(title:const Text('Blocked professionals')),body:error!=null?ErrorPanel(message:error!,retry:load):items==null?const Center(child:CircularProgressIndicator()):ListView(padding:const EdgeInsets.all(20),children:items!.isEmpty?[const EmptyPanel(icon:Icons.block_outlined,title:'No blocked accounts',message:'You can block messages from a professional’s profile.')]:items!.map((b)=>ListTile(title:Text(b['name']),trailing:TextButton(onPressed:()async{try{await api.request('/block/${b['id']}',body:{'blocked':false});await load();}catch(e){if(c.mounted){toast(c,e);}}},child:const Text('Unblock')))).toList()));}
+class BlocksPage extends StatefulWidget {
+  const BlocksPage({super.key});
+  @override
+  State<BlocksPage> createState() => _BlocksPageState();
+}
+
+class _BlocksPageState extends State<BlocksPage> {
+  List<dynamic>? items;
+  String? error;
+  @override
+  void initState() {
+    super.initState();
+    load();
+  }
+
+  Future<void> load() async {
+    try {
+      final data = await api.request('/blocks');
+      if (mounted) {
+        setState(() {
+          items = data;
+          error = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => error = '$e');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext c) => Scaffold(
+    appBar: AppBar(title: const Text('Xirfadlayaasha la xannibay')),
+    body: error != null
+        ? ErrorPanel(message: error!, retry: load)
+        : items == null
+        ? const Center(child: CircularProgressIndicator())
+        : ListView(
+            padding: const EdgeInsets.all(20),
+            children: items!.isEmpty
+                ? [
+                    const EmptyPanel(
+                      icon: Icons.block_outlined,
+                      title: 'No blocked accounts',
+                      message:
+                          'You can block messages from a professional’s profile.',
+                    ),
+                  ]
+                : items!
+                      .map(
+                        (b) => ListTile(
+                          title: Text(b['name']),
+                          trailing: TextButton(
+                            onPressed: () async {
+                              try {
+                                await api.request(
+                                  '/block/${b['id']}',
+                                  body: {'blocked': false},
+                                );
+                                await load();
+                              } catch (e) {
+                                if (c.mounted) {
+                                  toast(c, e);
+                                }
+                              }
+                            },
+                            child: const Text('Unblock'),
+                          ),
+                        ),
+                      )
+                      .toList(),
+          ),
+  );
+}

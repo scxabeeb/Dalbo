@@ -4,3 +4,4 @@ mobile
 .local
 .env
 .git
+**/App_Data

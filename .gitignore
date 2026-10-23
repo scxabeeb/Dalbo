@@ -16,3 +16,4 @@
 releases/
 **/.gradle/
 **/.kotlin/
+**/App_Data/

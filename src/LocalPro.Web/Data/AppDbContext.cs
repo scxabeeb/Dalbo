@@ -6,7 +6,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options):IdentityDbCont
  public DbSet<Category> Categories=>Set<Category>(); public DbSet<Professional> Professionals=>Set<Professional>();
  public DbSet<Appointment> Appointments=>Set<Appointment>(); public DbSet<Message> Messages=>Set<Message>(); public DbSet<Review> Reviews=>Set<Review>(); public DbSet<AuditEvent> AuditEvents=>Set<AuditEvent>();
  public DbSet<Notification> Notifications=>Set<Notification>();public DbSet<Favorite> Favorites=>Set<Favorite>();public DbSet<UserReport> Reports=>Set<UserReport>();public DbSet<UserBlock> Blocks=>Set<UserBlock>();
+ public DbSet<ServiceRequest> ServiceRequests=>Set<ServiceRequest>();public DbSet<ServiceRequestEvent> ServiceRequestEvents=>Set<ServiceRequestEvent>();
  protected override void OnModelCreating(ModelBuilder b){base.OnModelCreating(b);
+ b.Entity<Category>().Property(c=>c.VisitFee).HasPrecision(10,2);
+ b.Entity<ServiceRequest>().Property(c=>c.VisitFee).HasPrecision(10,2);
+ b.Entity<ServiceRequest>().HasOne(r=>r.Customer).WithMany().HasForeignKey(r=>r.CustomerId).OnDelete(DeleteBehavior.Restrict);
+ b.Entity<ServiceRequest>().HasOne(r=>r.Professional).WithMany().HasForeignKey(r=>r.ProfessionalId).OnDelete(DeleteBehavior.Restrict);
+ b.Entity<ServiceRequest>().HasIndex(r=>new{r.CustomerId,r.CreatedUtc});
  b.Entity<Favorite>().HasIndex(x=>new{x.UserId,x.ProfessionalId}).IsUnique();b.Entity<UserBlock>().HasIndex(x=>new{x.UserId,x.BlockedUserId}).IsUnique();b.Entity<Notification>().HasIndex(x=>new{x.UserId,x.CreatedUtc});
  b.Entity<Professional>().HasIndex(x=>x.UserId).IsUnique(); b.Entity<Professional>().Property(x=>x.HourlyRate).HasPrecision(10,2);
  b.Entity<Professional>().HasOne(x=>x.User).WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Restrict);

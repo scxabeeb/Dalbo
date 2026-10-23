@@ -53,3 +53,26 @@ Send timestamps with a UTC `Z` marker. Display times in EAT (UTC+3). Appointment
 Actions: `confirm`, `decline`, `cancel`, `start`, `complete`, `reschedule`, `accept-time`. Reschedule also sends `proposedStartUtc`. Only the other participant can accept a proposed time. Confirmations acquire a MySQL `FOR UPDATE` lock on the professional row inside a transaction and recheck conflicts. Existing confirmed time remains until an accepted proposal commits. A confirmation declines conflicting pending requests.
 
 Business-rule failures return HTTP 400 with `{ "error": "..." }`; unauthenticated application API access returns 401. Identity validation uses standard validation problem responses. The API is not configured for a separate browser origin; Flutter native clients do not require CORS.
+
+## DANXALIYE service requests
+
+`GET /categories` returns active services in display order with `group`, `description`, `visitFee`, and `sortOrder`.
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| GET | `/service-requests` | Current customer’s and assigned professional’s requests |
+| GET | `/service-requests/{id}` | Participant/admin-only details and chronological status events |
+| POST | `/service-requests` | Create request; optional `photoBase64` for PNG/JPEG up to 3 MB |
+| POST | `/service-requests/{id}/edit` | Customer edit before departure; category and original photo stay fixed |
+| POST | `/service-requests/{id}/action` | `assign`, `depart`, `start`, `complete`, or `cancel` |
+| GET | `/service-requests/{id}/photo` | Authorized image bytes, `Cache-Control: private, no-store` |
+
+```json
+{"categoryId":1,"description":"Nalalka ayaa shaqayn waayay","city":"Garowe","address":"Xaafad iyo cinwaan","when":"Now","paymentPreference":"MobileMoney"}
+```
+
+`when`: `Now`, `Today`, `Tomorrow`. `paymentPreference`: `MobileMoney`, `Cash`. Optional `photoBase64` contains raw base64, not a data URL. Do not send customer addresses in query strings. Invalid inputs or unauthorized record access return 400; missing authentication returns 401.
+
+Only an administrator can `assign` with `professionalId`. The assigned professional or admin can `depart` → `start` → `complete`. Customer/admin cancellation is allowed in Received/Assigned/OnTheWay, and rejected after work starts. Row locks serialize updates to a request. Customer edit is permitted only in Received/Assigned, and notifies the assigned professional.
+
+Admin web routes: `/Dispatch` for assignment/fees; `/Admin` for approvals and reports. Fee changes apply to future requests; existing requests retain their fee snapshot. Empty fee means not yet quoted. No money movement occurs. Request status is not a confirmed one-hour calendar appointment: dispatch staff must coordinate availability, duration and travel with the professional.

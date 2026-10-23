@@ -1,18 +1,10 @@
-# Verification — 23 October 2026
+# Verification — DANXALIYE update, 24 October 2026
 
-- ASP.NET solution build: passed, zero compile errors. NuGet reported inability to reach its service/vulnerability feed; cached dependencies were used.
-- EF Core migrations: applied successfully to an isolated MySQL 9.5 instance.
-- Python integration suite: 7 tests passed, covering directory filtering/DTO privacy, authentication, approval gating, private messages, booking concurrency and rescheduling, review eligibility, favorites, notifications, blocking/unblocking and administrator access.
-- Flutter analysis: no issues found.
-- Flutter tests: 2 passed (signed-out account screen and EAT timestamp conversion).
-- Android debug APK: built successfully from final source.
-- Browser: inspected home and profile layouts, tested plumbing filter (two matching professionals), and confirmed appointment navigation redirects a signed-out visitor to login.
-- Brand preview screenshot: web-preview.png (updated with the supplied Dalbo logo and orange/navy theme).
+- ASP.NET Core/Razor Pages build passed with zero compile errors. NuGet vulnerability-feed access remained unavailable; cached dependencies were used.
+- New EF Core migration applied successfully to isolated MySQL 9.5 with existing development data.
+- Nine integration tests passed. New coverage checks all 16 services, malformed image rejection, participant/admin-only image access, no-store image responses, assignment permissions, customer editing rules, state-transition permissions and ordered lifecycle events. Existing directory/chat/appointment checks also passed.
+- Flutter analysis passed, two Flutter regression tests passed, and the final Android debug APK built with the new catalog, photo picker, phone dialing and order tracking screens.
+- Browser loaded the Somali home and inspected layout. The captured preview reflects the available browser panel; narrow-screen rendering and physical mobile device testing still require device QA.
+- No fake arrival estimates, GPS position, review scores or payment confirmation are used.
 
-No Android device/emulator was connected, so the APK was not exercised on a device. iOS compilation/signing, MySQL 8.4 Docker runtime, narrow-screen browser rendering, production deployment, and live vulnerability audit were not verified. The source includes responsive breakpoints; they still need device QA.
-
-Local verification processes were stopped after testing. Follow README.md to start your development environment.
-
-## Supplied branding update
-
-Web build, Flutter analysis, and Android debug APK build passed after integrating the supplied logos. Browser inspection confirmed the header logo and updated theme. Android legacy/adaptive launcher assets and all iOS app icon sizes were generated from the supplied artwork; iOS signing/build remains unverified.
+The high-quality logo PDF is unavailable; the active identity is an explicitly interim wordmark and native monogram. iOS signing/build, physical-device phone/gallery behavior, full image decoding/malware scanning, payment processing and map/ETA integration were not verified/implemented. The new service-request flow is not a timed appointment and does not reserve a professional’s calendar.

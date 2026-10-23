@@ -2,12 +2,12 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 namespace LocalPro.Web.Domain;
 public class AppUser : IdentityUser { [MaxLength(100)] public string DisplayName {get;set;} = ""; }
-public class Category { public int Id {get;set;} [MaxLength(80)] public string Name {get;set;}=""; [MaxLength(20)] public string Icon {get;set;}=""; }
+public class Category { public int Id {get;set;} [MaxLength(80)] public string Name {get;set;}=""; [MaxLength(20)] public string Icon {get;set;}=""; [MaxLength(30)] public string Group {get;set;}="Farsamo"; [MaxLength(300)] public string Description {get;set;}=""; public bool Active {get;set;}=true; public int SortOrder {get;set;} public decimal? VisitFee {get;set;} }
 public class Professional {
  public int Id {get;set;} public string UserId {get;set;}=""; public AppUser User {get;set;}=null!;
  public int CategoryId {get;set;} public Category Category {get;set;}=null!;
  [MaxLength(100)] public string Name {get;set;}="";
- [MaxLength(100)] public string City {get;set;}="Mogadishu";
+ [MaxLength(100)] public string City {get;set;}="Garowe";
  [MaxLength(100)] public string Neighborhood {get;set;}="";
  [MaxLength(2000)] public string Bio {get;set;}="";
  [MaxLength(30)] public string Phone {get;set;}="";
@@ -35,3 +35,22 @@ public class Notification { public int Id {get;set;} public string UserId {get;s
 public class Favorite { public int Id {get;set;} public string UserId {get;set;}=""; public int ProfessionalId {get;set;} }
 public class UserBlock { public int Id {get;set;} public string UserId {get;set;}=""; public string BlockedUserId {get;set;}=""; }
 public class UserReport { public int Id {get;set;} public string UserId {get;set;}=""; public int ProfessionalId {get;set;} [MaxLength(2000)] public string Reason {get;set;}=""; public bool Resolved {get;set;} public DateTime CreatedUtc {get;set;}=DateTime.UtcNow; }
+
+public enum ServiceRequestStatus { Received, Assigned, OnTheWay, InProgress, Completed, Cancelled }
+public class ServiceRequest {
+ public int Id {get;set;} public string CustomerId {get;set;}=""; public AppUser Customer {get;set;}=null!;
+ public int CategoryId {get;set;} public Category Category {get;set;}=null!;
+ public int? ProfessionalId {get;set;} public Professional? Professional {get;set;}
+ [MaxLength(2000)]public string Description {get;set;}="";
+ [MaxLength(300)]public string Address {get;set;}="";
+ [MaxLength(80)]public string City {get;set;}="Garowe";
+ [MaxLength(12)]public string When {get;set;}="Now";
+ public DateTime RequestedDateUtc {get;set;}
+ [MaxLength(20)]public string PaymentPreference {get;set;}="MobileMoney";
+ public decimal? VisitFee {get;set;}
+ [MaxLength(200)]public string? PhotoFile {get;set;} public string? PhotoType {get;set;}
+ public ServiceRequestStatus Status {get;set;}=ServiceRequestStatus.Received;
+ public DateTime CreatedUtc {get;set;}=DateTime.UtcNow; public DateTime UpdatedUtc {get;set;}=DateTime.UtcNow;
+ public List<ServiceRequestEvent> Events {get;set;}=[];
+}
+public class ServiceRequestEvent {public int Id{get;set;}public int ServiceRequestId{get;set;}public ServiceRequest ServiceRequest{get;set;}=null!;public ServiceRequestStatus Status{get;set;}public string ActorId{get;set;}="";public DateTime CreatedUtc{get;set;}=DateTime.UtcNow;}

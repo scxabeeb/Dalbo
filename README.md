@@ -1,8 +1,21 @@
-# Dalbo
+# DANXALIYE
 
-A local professional services marketplace built with **ASP.NET Core Razor Pages**, a shared **ASP.NET Core API**, **Flutter** for Android/iOS, and **MySQL through EF Core/Pomelo**. The working launch area is Mogadishu, with USD estimates and East Africa Time (UTC+3).
+A local professional services marketplace built with **ASP.NET Core Razor Pages**, a shared **ASP.NET Core API**, **Flutter** for Android/iOS, and **MySQL through EF Core/Pomelo**. The service-request launch area is Garowe, Puntland, with USD estimates and East Africa Time (UTC+3).
 
 This is a functional development version, with real database persistence. It is not yet the complete production release described by the source brief. The feature matrix below records the implementation boundary explicitly.
+
+## Current product flow
+
+The latest owner reference is [DANXALIYE App](https://claude.ai/artifact/YXtg4LHL7vwCt3hAN5t1KK#page-dcb81aee8d83): **DANXALIYE — Baahidaada, Xalkeeda.** New home, catalog, request and tracking screens use Somali and a navy/gold theme. See `docs/danxaliye-reference.md` for the mapped features and limits.
+
+- Browse 16 services grouped into Gaadiid, Guriga and Farsamo.
+- Request a service without first choosing a professional: description, private optional photo, location, Hadda/Maanta/Berri, and Mobile Money/Cash preference.
+- Administrators assign an approved professional for the requested category at `/Dispatch` and configure optional visit fees.
+- Customers and assigned professionals track Received → Assigned → OnTheWay → InProgress → Completed, with event timestamps and notifications.
+- Customers can edit before departure and cancel before work starts. Tracking refreshes automatically.
+- The original professional directory, direct appointments, chat, reviews and saved professionals remain available as secondary capabilities.
+
+Mobile Money is a recorded preference, not a processed payment. No GPS tracking or ETA calculation is connected. The exact logo PDF was inaccessible; active branding uses an explicitly interim wordmark and native icon, awaiting the source logo.
 
 ## Open the projects
 
@@ -23,7 +36,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Open [Dalbo](http://localhost:5080). This Compose configuration is for local development: it enables demo accounts and binds ports to loopback.
+Open [DANXALIYE](http://localhost:5080). This Compose configuration is for local development: it enables demo accounts and binds ports to loopback.
 
 All demo accounts use your `DEMO_PASSWORD` from `.env`:
 
@@ -35,7 +48,7 @@ All demo accounts use your `DEMO_PASSWORD` from `.env`:
 
 Demo profiles are fictional and contain no working contact numbers. The application does not mark demo email addresses as verified and does not invent review ratings. Register a real professional and publish a business phone to test contact actions.
 
-Database data and Identity data-protection keys persist in Docker volumes. Use `docker compose down` to stop the development environment. Do not remove the data volume if you want to keep your data.
+Database data, private service-request photos and Identity data-protection keys persist in Docker volumes. Use `docker compose down` to stop the development environment. Do not remove the data volume if you want to keep your data.
 
 ## Run the web application directly
 
@@ -100,7 +113,7 @@ The integration suite creates test accounts, profiles, messages, favorites, repo
 
 ## Design
 
-A responsive orange-and-navy interface using the supplied Dalbo logo and app icon, with a custom house illustration, service cards, clear availability labels, keyboard-accessible forms, mobile navigation, and empty/error states. The Flutter app uses Material 3 and the same Dalbo palette. No paid assets or remote fonts are needed.
+A responsive navy-and-gold DANXALIYE service-request interface based on the latest owner reference, service cards, clear availability labels, keyboard-accessible forms, mobile navigation, and empty/error states. The Flutter app uses Material 3 and the same DANXALIYE palette. No paid assets or remote fonts are needed.
 
 ## Production handoff
 

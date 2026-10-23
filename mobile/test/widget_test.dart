@@ -9,8 +9,8 @@ void main() {
         home: Scaffold(body: SignInPanel(onSignedIn: () {})),
       ),
     );
-    expect(find.text('Make yourself at home.'), findsOneWidget);
-    expect(find.text('Log in or create account ↗'), findsOneWidget);
+    expect(find.text('Ku soo dhowow DANXALIYE.'), findsOneWidget);
+    expect(find.text('Soo gal ama isdiiwaangeli ↗'), findsOneWidget);
   });
   test('API timestamps are displayed consistently in East Africa Time', () {
     expect(localTime('2026-10-24T07:00:00'), '24/10/2026 · 10:00 EAT');

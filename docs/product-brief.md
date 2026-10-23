@@ -6,7 +6,9 @@
 
 Build a responsive website and mobile application that connect customers with local service professionals, including electricians, plumbers, and air-conditioning and refrigeration technicians. Professionals can register, publish profiles, share their contact details, manage availability, chat with customers, and accept appointment requests. Customers can discover professionals, compare their services, contact them, and book appointments.
 
-**App name:** Dalbo.
+**App name:** DANXALIYE.
+
+> Latest product direction: Somali home, 16-service catalog, service requests and tracking in Garowe. See danxaliye-reference.md; this supersedes the original directory-first home.
 
 **Initial scope assumption:** Start in one city or region, with service categories and locations managed by an administrator. Support expansion to additional cities, languages, and service categories later.
 

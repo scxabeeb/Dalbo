@@ -2,6 +2,16 @@
 
 Your selected stack supersedes the React/Node/PostgreSQL suggestions in the product brief.
 
+## DANXALIYE update
+
+- Somali home, 16-service catalog, request form and tracking screens on web and Flutter.
+- Category groups, descriptions, display order, active flag and nullable visit fee, with migration-safe mapping of existing electrical/plumbing/AC categories.
+- Service requests independent of direct professional appointments, with private address and optional PNG/JPEG photo (3 MB maximum), Now/Today/Tomorrow preference, payment preference and fee snapshot.
+- Participant/admin-only photo access, signature checks, private disk storage outside wwwroot, and a persistent Docker photo volume.
+- Administrator assignment and visit-fee editing in Dispatch; only approved, accepting professionals in the requested category may be assigned.
+- Transactional status changes, event timeline, customer edits/cancellation, professional progress updates, notifications, private chat and call actions.
+- Interim DANXALIYE wordmark and app icon. High-quality source logo remains unavailable.
+
 ## Working development features
 
 - Responsive Razor Pages website and Flutter Android/iOS source using one ASP.NET API.
@@ -25,7 +35,7 @@ Your selected stack supersedes the React/Node/PostgreSQL suggestions in the prod
 These features are **not implemented** and must not be presented as working:
 
 - Phone OTP authentication, verified-contact onboarding, production email/SMS delivery, password recovery UI, administrator MFA enforcement and account deletion/export workflows.
-- Profile photo/portfolio uploads, chat or booking image attachments, malware/file validation and object storage.
+- Profile photo/portfolio uploads, chat or legacy appointment image attachments, full image decoding/malware scanning and object storage. Service-request PNG/JPEG upload with size/signature checks is implemented.
 - SignalR/WebSocket delivery, message read receipts, typing indicators, push notifications, appointment reminders, notification preferences and quiet hours.
 - Date-slot availability search, weekly schedules, holidays/time off, custom duration, travel buffers, request expiry jobs and configurable cancellation cutoffs. Current scheduling uses daily start/end hours and one-hour visits.
 - Maps, device geolocation, configurable currencies/languages, translation catalogs and location administration.

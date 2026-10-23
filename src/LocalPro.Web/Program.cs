@@ -11,14 +11,15 @@ builder.Services.AddDbContext<AppDbContext>(o=>o.UseMySql(builder.Configuration.
 builder.Services.AddIdentityApiEndpoints<AppUser>(o=>{o.Password.RequiredLength=10;o.User.RequireUniqueEmail=true;o.Lockout.MaxFailedAccessAttempts=5;}).AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddAuthentication(o=>{o.DefaultChallengeScheme=IdentityConstants.ApplicationScheme;o.DefaultForbidScheme=IdentityConstants.ApplicationScheme;});
 builder.Services.ConfigureApplicationCookie(o=>{o.LoginPath="/Account/Login";o.Cookie.HttpOnly=true;o.Cookie.SameSite=SameSiteMode.Lax;o.AccessDeniedPath="/Denied";});
-builder.Services.AddScoped<Marketplace>();
+builder.Services.AddScoped<Marketplace>();builder.Services.AddScoped<RequestService>();
+builder.WebHost.ConfigureKestrel(o=>o.Limits.MaxRequestBodySize=5*1024*1024);
 builder.Services.AddRateLimiter(o=>{o.RejectionStatusCode=429;o.AddPolicy("auth",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new(){PermitLimit=20,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));});
 var app=builder.Build();
 if(!app.Environment.IsDevelopment()){app.UseExceptionHandler("/Error");app.UseHsts();app.UseHttpsRedirection();}
 app.Use(async(ctx,next)=>{ctx.Response.Headers["X-Content-Type-Options"]="nosniff";ctx.Response.Headers["Referrer-Policy"]="same-origin";ctx.Response.Headers["Content-Security-Policy"]="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";try{await next();}catch(RuleException ex){if(ctx.Request.Path.StartsWithSegments("/api")){ctx.Response.StatusCode=400;await ctx.Response.WriteAsJsonAsync(new{error=ex.Message});}else throw;}});
 app.UseStaticFiles();app.UseRouting();app.UseRateLimiter();app.UseAuthentication();app.UseAuthorization();app.UseAntiforgery();
 app.MapRazorPages();app.MapGroup("/api/auth").MapIdentityApi<AppUser>().RequireRateLimiting("auth");
-app.MapGet("/api/categories",async(AppDbContext db)=>await db.Categories.AsNoTracking().ToListAsync());
+app.MapGet("/api/categories",async(AppDbContext db)=>await db.Categories.AsNoTracking().Where(c=>c.Active).OrderBy(c=>c.SortOrder).ToListAsync());
 app.MapGet("/api/professionals",async(string? q,int? category,string? city,bool? available,Marketplace m)=>(await m.Search(q,category,city,available??false)).Select(PublicProfile));
 app.MapGet("/api/professionals/{id:int}",async(int id,Marketplace m)=>PublicProfile(await m.Profile(id)));
 var api=app.MapGroup("/api").RequireAuthorization(p=>p.AddAuthenticationSchemes(IdentityConstants.BearerScheme).RequireAuthenticatedUser());
@@ -39,6 +40,12 @@ api.MapPost("/favorites/{pro:int}",async(int pro,ClaimsPrincipal u,AppDbContext 
 api.MapPost("/report/{pro:int}",async(int pro,ReportInput input,ClaimsPrincipal u,AppDbContext db,Marketplace m)=>{await m.Profile(pro);if(string.IsNullOrWhiteSpace(input.Reason)||input.Reason.Length>2000)return Results.BadRequest(new{error="Enter a reason up to 2000 characters."});db.Reports.Add(new(){UserId=Uid(u),ProfessionalId=pro,Reason=input.Reason.Trim()});await db.SaveChangesAsync();return Results.Ok();});
 api.MapGet("/blocks",async(ClaimsPrincipal u,AppDbContext db)=>{var id=Uid(u);return await (from b in db.Blocks join p in db.Professionals on b.BlockedUserId equals p.UserId where b.UserId==id select new{p.Id,p.Name}).ToListAsync();});
 api.MapPost("/block/{pro:int}",async(int pro,BlockInput input,ClaimsPrincipal u,AppDbContext db)=>{var p=await db.Professionals.FindAsync(pro);if(p==null)return Results.NotFound();var id=Uid(u);if(p.UserId==id)return Results.BadRequest(new{error="Cannot block yourself."});var block=await db.Blocks.SingleOrDefaultAsync(b=>b.UserId==id&&b.BlockedUserId==p.UserId);if(input.Blocked&&block==null)db.Blocks.Add(new(){UserId=id,BlockedUserId=p.UserId});else if(!input.Blocked&&block!=null)db.Blocks.Remove(block);await db.SaveChangesAsync();return Results.Ok();});
+api.MapGet("/service-requests",async(ClaimsPrincipal u,RequestService service)=>(await service.List(u)).Select(r=>RequestService.Dto(r,Uid(u))));
+api.MapGet("/service-requests/{id:int}",async(int id,ClaimsPrincipal u,RequestService service)=>RequestService.Dto(await service.Get(u,id),Uid(u)));
+api.MapPost("/service-requests",async(ServiceRequestInput input,ClaimsPrincipal u,RequestService service)=>{var r=await service.Create(u,input);return Results.Ok(new{r.Id,status=r.Status.ToString()});});
+api.MapPost("/service-requests/{id:int}/edit",async(int id,ServiceRequestInput input,ClaimsPrincipal u,RequestService service)=>{await service.Edit(u,id,input);return Results.Ok();});
+api.MapPost("/service-requests/{id:int}/action",async(int id,RequestActionInput input,ClaimsPrincipal u,RequestService service)=>{await service.Change(u,id,input.Action,input.ProfessionalId);return Results.Ok();});
+api.MapGet("/service-requests/{id:int}/photo",async(int id,ClaimsPrincipal u,RequestService service,HttpContext context)=>{var p=await service.Photo(u,id);context.Response.Headers.CacheControl="private, no-store";return Results.File(p.Bytes,p.Type);});
 app.MapGet("/health",()=>Results.Ok(new{status="ok"}));
 await using(var scope=app.Services.CreateAsyncScope()){await Seed.Run(scope.ServiceProvider,app.Environment.IsDevelopment()&&builder.Configuration.GetValue<bool>("SeedDemo"),builder.Configuration["DemoPassword"]);}
 await app.RunAsync();
@@ -56,3 +63,5 @@ public record ProfessionalInput(string Name,int CategoryId,string City,string Ne
 public record ReportInput(string Reason);
 
 public record BlockInput(bool Blocked=true);
+
+public record RequestActionInput(string Action,int? ProfessionalId=null);

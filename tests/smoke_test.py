@@ -83,4 +83,46 @@ class MarketplaceTests(unittest.TestCase):
   try:
    with urllib.request.urlopen(req) as response:self.assertNotEqual(response.status,200)
   except urllib.error.HTTPError as e:self.assertEqual(e.code,403)
+ def test_08_danxaliye_service_catalog(self):
+  code,categories=call('/api/categories');self.assertEqual(code,200);self.assertEqual(len(categories),16)
+  names={c['name'] for c in categories}
+  self.assertIn('Gaadiid Dalbo',names);self.assertIn('Dhirayn & Beer',names)
+  self.assertEqual({c['group'] for c in categories},{'Gaadiid','Guriga','Farsamo'})
+  self.assertTrue(all(c['visitFee'] is None for c in categories))
+ def test_09_service_request_privacy_assignment_and_lifecycle(self):
+  import base64
+  admin=login('admin@localpro.test')
+  body=dict(categoryId=1,description='Tijaabo: dayactirka korontada',address='Cinwaan tijaabo',city='Garowe',when='Now',paymentPreference='MobileMoney')
+  self.assertEqual(call('/api/service-requests',body)[0],401)
+  self.assertEqual(call('/api/service-requests',{**body,'when':'Invalid'},self.customer)[0],400)
+  self.assertEqual(call('/api/service-requests',{**body,'photoBase64':base64.b64encode(b'not an image').decode()},self.customer)[0],400)
+  png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aE1kAAAAASUVORK5CYII='
+  code,item=call('/api/service-requests',{**body,'photoBase64':png},self.customer);self.assertEqual(code,200)
+  path='/api/service-requests/'+str(item['id'])
+  code,details=call(path,token=self.customer);self.assertEqual(code,200);self.assertEqual(details['status'],'Received');self.assertTrue(details['hasPhoto']);self.assertNotIn('photoFile',details)
+  self.assertEqual(call(path,token=self.other)[0],400)
+  self.assertEqual(call(path+'/photo',token=self.other)[0],400)
+  req=urllib.request.Request(BASE+path+'/photo',headers={'Authorization':'Bearer '+self.customer})
+  with urllib.request.urlopen(req) as response:
+   self.assertEqual(response.headers['Content-Type'],'image/png');self.assertIn('no-store',response.headers['Cache-Control']);self.assertEqual(response.read(),base64.b64decode(png))
+  self.assertEqual(call(path+'/action',{'action':'assign','professionalId':self.pro_id},self.customer)[0],400)
+  self.assertEqual(call(path+'/action',{'action':'assign','professionalId':self.pro_id},admin)[0],200)
+  self.assertEqual(call(path+'/edit',{**body,'address':'Cinwaan cusub'},self.customer)[0],200)
+  self.assertEqual(call(path,token=self.pro)[1]['address'],'Cinwaan cusub')
+  self.assertEqual(call(path+'/edit',body,self.pro)[0],400)
+  self.assertEqual(call(path+'/action',{'action':'depart'},self.customer)[0],400)
+  self.assertEqual(call(path+'/action',{'action':'start'},self.pro)[0],400)
+  self.assertEqual(call(path+'/action',{'action':'depart'},self.pro)[0],200)
+  self.assertEqual(call(path+'/edit',body,self.customer)[0],400)
+  self.assertEqual(call(path+'/action',{'action':'start'},self.pro)[0],200)
+  self.assertEqual(call(path+'/action',{'action':'cancel'},self.customer)[0],400)
+  self.assertEqual(call(path+'/action',{'action':'complete'},self.pro)[0],200)
+  details=call(path,token=self.customer)[1]
+  self.assertEqual(details['status'],'Completed')
+  self.assertEqual([e['status'] for e in details['events']],['Received','Assigned','OnTheWay','InProgress','Completed'])
+  self.assertEqual(call(path+'/action',{'action':'complete'},self.pro)[0],400)
+  code,cancelled=call('/api/service-requests',body,self.customer);self.assertEqual(code,200)
+  cancelpath='/api/service-requests/'+str(cancelled['id'])+'/action'
+  self.assertEqual(call(cancelpath,{'action':'cancel'},self.customer)[0],200)
+  self.assertEqual(call(cancelpath,{'action':'assign','professionalId':self.pro_id},admin)[0],400)
 if __name__=='__main__':unittest.main(verbosity=2)

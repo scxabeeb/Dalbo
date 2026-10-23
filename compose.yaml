@@ -32,6 +32,8 @@ services:
       - "127.0.0.1:5080:8080"
     volumes:
       - localpro_keys:/root/.aspnet/DataProtection-Keys
+      - request_photos:/app/App_Data
 volumes:
   localpro_mysql:
   localpro_keys:
+  request_photos:
