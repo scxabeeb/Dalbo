@@ -5,3 +5,4 @@ mobile
 .env
 .git
 **/App_Data
+**/appsettings.Local.json

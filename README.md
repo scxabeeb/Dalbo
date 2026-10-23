@@ -50,6 +50,10 @@ Demo profiles are fictional and contain no working contact numbers. The applicat
 
 Database data, private service-request photos and Identity data-protection keys persist in Docker volumes. Use `docker compose down` to stop the development environment. Do not remove the data volume if you want to keep your data.
 
+## Local MySQL configuration
+
+For local development, copy `src/LocalPro.Web/appsettings.Local.example.json` to `src/LocalPro.Web/appsettings.Local.json` and enter your own local connection details. The local file is ignored by Git/Docker and excluded from publishing. It is loaded in Development by the app and by the EF Core design-time factory; environment variables take precedence. Keep local credentials private. Use `bash scripts/run-web.sh` to start the app, and `dotnet ef database update --project src/LocalPro.Web` to apply checked-in migrations. The configured database name can be `danxaliye`; demo account seeding is disabled by default.
+
 ## Run the web application directly
 
 Development baseline: .NET SDK 9, EF Core 9.0.9, Pomelo 9.0.0 and MySQL 8.4. This matches the installed SDK used to build the project. Before production, upgrade the runtime to a currently supported .NET release and revalidate the MySQL provider. The machine used for verification had MySQL 9.5; deployment configuration targets MySQL 8.4.

@@ -6,6 +6,7 @@ using LocalPro.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 var builder=WebApplication.CreateBuilder(args);
+if(builder.Environment.IsDevelopment())builder.Configuration.AddJsonFile("appsettings.Local.json",optional:true,reloadOnChange:false).AddEnvironmentVariables().AddCommandLine(args);
 builder.Services.AddRazorPages(o=>{o.Conventions.AuthorizeFolder("/Account");o.Conventions.AllowAnonymousToPage("/Account/Login");o.Conventions.AllowAnonymousToPage("/Account/Register");});
 builder.Services.AddDbContext<AppDbContext>(o=>o.UseMySql(builder.Configuration.GetConnectionString("Default"),new MySqlServerVersion(new Version(8,4,0))));
 builder.Services.AddIdentityApiEndpoints<AppUser>(o=>{o.Password.RequiredLength=10;o.User.RequireUniqueEmail=true;o.Lockout.MaxFailedAccessAttempts=5;}).AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
