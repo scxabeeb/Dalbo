@@ -856,12 +856,13 @@ class _ServiceOrdersState extends State<ServiceOrders> {
 
   @override
   Widget build(BuildContext c) {
-    if (api.token == null)
+    if (api.token == null) {
       return SignInPanel(
         onSignedIn: () => setState(() {
           load();
         }),
       );
+    }
     return RefreshIndicator(
       onRefresh: load,
       child: ListView(
@@ -1002,10 +1003,11 @@ class _ServiceTrackingState extends State<ServiceTracking> {
             headers: {'Authorization': 'Bearer ${api.token}'},
           )
           .timeout(const Duration(seconds: 20));
-      if (response.statusCode != 200)
+      if (response.statusCode != 200) {
         throw Exception(
           'Sawirka lama heli karo. Dib u soo gal haddii loo baahdo.',
         );
+      }
       if (mounted) {
         setState(() => photo = response.bodyBytes);
       }
