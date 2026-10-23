@@ -6,7 +6,7 @@
 
 Build a responsive website and mobile application that connect customers with local service professionals, including electricians, plumbers, and air-conditioning and refrigeration technicians. Professionals can register, publish profiles, share their contact details, manage availability, chat with customers, and accept appointment requests. Customers can discover professionals, compare their services, contact them, and book appointments.
 
-**Working name:** LocalPro (temporary; final branding to be selected).
+**App name:** Dalbo.
 
 **Initial scope assumption:** Start in one city or region, with service categories and locations managed by an administrator. Support expansion to additional cities, languages, and service categories later.
 

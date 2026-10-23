@@ -10,7 +10,7 @@ public static class Seed {
  var users=services.GetRequiredService<UserManager<AppUser>>();
  if(!demo)return;if(string.IsNullOrWhiteSpace(password))throw new InvalidOperationException("Set DemoPassword via environment variable when SeedDemo=true.");
  async Task<AppUser> User(string email,string name){var u=await users.FindByEmailAsync(email);if(u!=null)return u;u=new(){UserName=email,Email=email,DisplayName=name};var result=await users.CreateAsync(u,password);if(!result.Succeeded)throw new InvalidOperationException(string.Join("; ",result.Errors.Select(e=>e.Description)));return u;}
- var admin=await User("admin@localpro.test","LocalPro Admin");await users.AddToRoleAsync(admin,"Admin");await User("customer@localpro.test","Amina Hassan");
+ var admin=await User("admin@localpro.test","Dalbo Admin");await users.AddToRoleAsync(admin,"Admin");await User("customer@localpro.test","Amina Hassan");
  string[] names=["Ahmed Mohamed","Fatima Ali","Yusuf Hassan","Khadija Omar","Abdirahman Nur","Maryan Ahmed"];
  string[] areas=["Hodan","Waberi","Hamar Weyne","Wadajir","Hodan","Abdiaziz"];
  var cats=await db.Categories.OrderBy(c=>c.Id).ToListAsync();

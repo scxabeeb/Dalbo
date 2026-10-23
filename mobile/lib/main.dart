@@ -10,14 +10,14 @@ const cream = Color(0xFFF5F5EE);
 const mint = Color(0xFFEAF3EB);
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const LocalProApp());
+  runApp(const DalboApp());
 }
 
-class LocalProApp extends StatelessWidget {
-  const LocalProApp({super.key});
+class DalboApp extends StatelessWidget {
+  const DalboApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'LocalPro',
+    title: 'Dalbo',
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       useMaterial3: true,
@@ -123,7 +123,7 @@ class _ShellState extends State<Shell> {
           Icon(Icons.handyman_rounded, color: green),
           SizedBox(width: 9),
           Text(
-            'localpro.',
+            'Dalbo.',
             style: TextStyle(
               fontSize: 27,
               fontWeight: FontWeight.w800,
@@ -728,7 +728,7 @@ class _AuthPageState extends State<AuthPage> {
             ),
           ),
           const Text(
-            'LocalPro stores account, message and booking data. Public business contacts are optional. Pay professionals directly. Profile approval does not certify qualifications. This is a development preview.',
+            'Dalbo stores account, message and booking data. Public business contacts are optional. Pay professionals directly. Profile approval does not certify qualifications. This is a development preview.',
             style: TextStyle(fontSize: 11, color: muted),
           ),
         ],

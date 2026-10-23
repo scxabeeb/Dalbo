@@ -7,7 +7,7 @@
 - Flutter tests: 2 passed (signed-out account screen and EAT timestamp conversion).
 - Android debug APK: built successfully from final source.
 - Browser: inspected home and profile layouts, tested plumbing filter (two matching professionals), and confirmed appointment navigation redirects a signed-out visitor to login.
-- Preview screenshot: web-preview.png.
+- Original preview screenshot: web-preview.png (captured before the app was renamed to Dalbo).
 
 No Android device/emulator was connected, so the APK was not exercised on a device. iOS compilation/signing, MySQL 8.4 Docker runtime, narrow-screen browser rendering, production deployment, and live vulnerability audit were not verified. The source includes responsive breakpoints; they still need device QA.
 

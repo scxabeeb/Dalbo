@@ -1,4 +1,4 @@
-# LocalPro
+# Dalbo
 
 A local professional services marketplace built with **ASP.NET Core Razor Pages**, a shared **ASP.NET Core API**, **Flutter** for Android/iOS, and **MySQL through EF Core/Pomelo**. The working launch area is Mogadishu, with USD estimates and East Africa Time (UTC+3).
 
@@ -23,7 +23,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Open [LocalPro](http://localhost:5080). This Compose configuration is for local development: it enables demo accounts and binds ports to loopback.
+Open [Dalbo](http://localhost:5080). This Compose configuration is for local development: it enables demo accounts and binds ports to loopback.
 
 All demo accounts use your `DEMO_PASSWORD` from `.env`:
 
