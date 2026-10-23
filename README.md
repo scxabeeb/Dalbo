@@ -100,7 +100,7 @@ The integration suite creates test accounts, profiles, messages, favorites, repo
 
 ## Design
 
-A responsive green-and-cream interface with a custom house illustration, service cards, clear availability labels, keyboard-accessible forms, mobile navigation, and empty/error states. The Flutter app uses Material 3 and the same palette. No paid assets or remote fonts are needed.
+A responsive orange-and-navy interface using the supplied Dalbo logo and app icon, with a custom house illustration, service cards, clear availability labels, keyboard-accessible forms, mobile navigation, and empty/error states. The Flutter app uses Material 3 and the same Dalbo palette. No paid assets or remote fonts are needed.
 
 ## Production handoff
 

@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'api.dart';
 
-const green = Color(0xFF116454);
-const ink = Color(0xFF173B35);
-const muted = Color(0xFF73817C);
-const cream = Color(0xFFF5F5EE);
-const mint = Color(0xFFEAF3EB);
+const brandNavy = Color(0xFF16202E);
+const brandOrange = Color(0xFFFF6A13);
+const ink = Color(0xFF16202E);
+const muted = Color(0xFF697382);
+const cream = Color(0xFFF7F7F9);
+const mint = Color(0xFFFFF1E8);
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const DalboApp());
@@ -23,8 +24,8 @@ class DalboApp extends StatelessWidget {
       useMaterial3: true,
       scaffoldBackgroundColor: Colors.white,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: green,
-        primary: green,
+        seedColor: brandNavy,
+        primary: brandNavy,
         surface: Colors.white,
       ),
       textTheme: const TextTheme(
@@ -118,20 +119,7 @@ class _ShellState extends State<Shell> {
   @override
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(
-      title: const Row(
-        children: [
-          Icon(Icons.handyman_rounded, color: green),
-          SizedBox(width: 9),
-          Text(
-            'Dalbo.',
-            style: TextStyle(
-              fontSize: 27,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -1.5,
-            ),
-          ),
-        ],
-      ),
+      title: Image.asset('assets/brand/dalbo-logo.png', width: 145, height: 42, fit: BoxFit.contain, semanticLabel: 'Dalbo'),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 18),
@@ -252,7 +240,7 @@ class _DiscoverState extends State<Discover> {
                   fontSize: 9,
                   letterSpacing: 1.3,
                   fontWeight: FontWeight.w700,
-                  color: green,
+                  color: brandNavy,
                 ),
               ),
               const SizedBox(height: 17),
@@ -405,7 +393,7 @@ class ProCard extends StatelessWidget {
               child: Text(
                 initials(pro['name']),
                 style: const TextStyle(
-                  color: green,
+                  color: brandNavy,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -420,7 +408,7 @@ class ProCard extends StatelessWidget {
         Text(
           pro['category'],
           style: const TextStyle(
-            color: green,
+            color: brandNavy,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -479,7 +467,7 @@ class StatusBadge extends StatelessWidget {
       color: mint,
       borderRadius: BorderRadius.circular(20),
     ),
-    child: Text(text, style: const TextStyle(color: green, fontSize: 10)),
+    child: Text(text, style: const TextStyle(color: brandNavy, fontSize: 10)),
   );
 }
 
@@ -683,7 +671,7 @@ class _AuthPageState extends State<AuthPage> {
     body: ListView(
       padding: const EdgeInsets.all(28),
       children: [
-        const Icon(Icons.handyman_rounded, color: green, size: 45),
+        Image.asset('assets/brand/dalbo-mark.png',height:70,semanticLabel:'Dalbo'),
         const SizedBox(height: 30),
         Text(
           register ? 'A good place to start.' : 'Welcome back.',
@@ -1108,7 +1096,7 @@ class _BookingsState extends State<Bookings> {
                     ),
                     Text(
                       localTime(a['startUtc']),
-                      style: const TextStyle(color: green, fontSize: 12),
+                      style: const TextStyle(color: brandNavy, fontSize: 12),
                     ),
                     const SizedBox(height: 12),
                     Text(a['description']),
@@ -1262,7 +1250,7 @@ class _InboxState extends State<Inbox> {
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 leading: const CircleAvatar(
                   backgroundColor: mint,
-                  child: Icon(Icons.chat_bubble_outline, color: green),
+                  child: Icon(Icons.chat_bubble_outline, color: brandNavy),
                 ),
                 title: Text(
                   t['name'] ?? 'Professional #${t['professionalId']}',
@@ -1470,7 +1458,7 @@ class Account extends StatelessWidget {
         const CircleAvatar(
           radius: 35,
           backgroundColor: mint,
-          child: Icon(Icons.person_outline, size: 34, color: green),
+          child: Icon(Icons.person_outline, size: 34, color: brandNavy),
         ),
         const SizedBox(height: 18),
         Text(
@@ -1513,13 +1501,13 @@ class Account extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         ListTile(
-          leading: const Icon(Icons.favorite_border, color: green),
+          leading: const Icon(Icons.favorite_border, color: brandNavy),
           title: const Text('Saved professionals'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => open(c, const SavedPage()),
         ),
         ListTile(
-          leading: const Icon(Icons.notifications_none, color: green),
+          leading: const Icon(Icons.notifications_none, color: brandNavy),
           title: const Text('Your updates'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => open(c, const UpdatesPage()),
@@ -1529,7 +1517,7 @@ class Account extends StatelessWidget {
           'Development preview. Payments are arranged directly with professionals. Account verification and production support are not enabled yet.',
           style: TextStyle(fontSize: 12, color: muted),
         ),
-        ListTile(leading:const Icon(Icons.block_outlined,color:green),title:const Text('Blocked professionals'),trailing:const Icon(Icons.chevron_right),onTap:()=>open(c,const BlocksPage())),
+        ListTile(leading:const Icon(Icons.block_outlined,color:brandNavy),title:const Text('Blocked professionals'),trailing:const Icon(Icons.chevron_right),onTap:()=>open(c,const BlocksPage())),
         const SizedBox(height: 30),
         OutlinedButton(
           onPressed: () async {
@@ -1741,7 +1729,7 @@ class EmptyPanel extends StatelessWidget {
     ),
     child: Column(
       children: [
-        Icon(icon, size: 42, color: green),
+        Icon(icon, size: 42, color: brandNavy),
         const SizedBox(height: 18),
         Text(
           title,
@@ -1790,7 +1778,7 @@ class SignInPanel extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.waving_hand_outlined, color: green, size: 50),
+          const Icon(Icons.waving_hand_outlined, color: brandNavy, size: 50),
           const SizedBox(height: 20),
           const Text(
             'Make yourself at home.',
@@ -1958,7 +1946,7 @@ class _UpdatesPageState extends State<UpdatesPage> {
                               n['read']
                                   ? Icons.notifications_none
                                   : Icons.notifications_active_outlined,
-                              color: green,
+                              color: brandNavy,
                             ),
                             title: Text(n['text']),
                             subtitle: Text(localTime(n['createdUtc'])),

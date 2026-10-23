@@ -7,8 +7,12 @@
 - Flutter tests: 2 passed (signed-out account screen and EAT timestamp conversion).
 - Android debug APK: built successfully from final source.
 - Browser: inspected home and profile layouts, tested plumbing filter (two matching professionals), and confirmed appointment navigation redirects a signed-out visitor to login.
-- Original preview screenshot: web-preview.png (captured before the app was renamed to Dalbo).
+- Brand preview screenshot: web-preview.png (updated with the supplied Dalbo logo and orange/navy theme).
 
 No Android device/emulator was connected, so the APK was not exercised on a device. iOS compilation/signing, MySQL 8.4 Docker runtime, narrow-screen browser rendering, production deployment, and live vulnerability audit were not verified. The source includes responsive breakpoints; they still need device QA.
 
 Local verification processes were stopped after testing. Follow README.md to start your development environment.
+
+## Supplied branding update
+
+Web build, Flutter analysis, and Android debug APK build passed after integrating the supplied logos. Browser inspection confirmed the header logo and updated theme. Android legacy/adaptive launcher assets and all iOS app icon sizes were generated from the supplied artwork; iOS signing/build remains unverified.
