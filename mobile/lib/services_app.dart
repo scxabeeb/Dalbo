@@ -1133,53 +1133,54 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                     style: TextStyle(fontSize: 11),
                   ),
                 ),
-                Wrap(
-                  spacing: 9,
-                  children: [
-                    if ('${item!['phone'] ?? ''}'.isNotEmpty)
-                      OutlinedButton.icon(
-                        onPressed: () async {
-                          try {
-                            final launched = await launchUrl(
-                              Uri(scheme: 'tel', path: item!['phone']),
-                            );
-                            if (!launched && c.mounted) {
-                              toast(
-                                c,
-                                'Lambarka lama furi karo: ${item!['phone']}',
+                if (item!['canCommunicate'] == true)
+                  Wrap(
+                    spacing: 9,
+                    children: [
+                      if ('${item!['phone'] ?? ''}'.isNotEmpty)
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            try {
+                              final launched = await launchUrl(
+                                Uri(scheme: 'tel', path: item!['phone']),
                               );
+                              if (!launched && c.mounted) {
+                                toast(
+                                  c,
+                                  'Lambarka lama furi karo: ${item!['phone']}',
+                                );
+                              }
+                            } catch (e) {
+                              if (c.mounted) {
+                                toast(c, e);
+                              }
                             }
-                          } catch (e) {
-                            if (c.mounted) {
-                              toast(c, e);
-                            }
-                          }
-                        },
-                        icon: Icon(Icons.phone_outlined, size: 17),
-                        label: Text('Wac'),
-                      ),
-                    FilledButton.icon(
-                      onPressed: () => open(
-                        c,
-                        ChatPage(
-                          pro: item!['professionalId'],
-                          name: item!['professional'],
-                          customer: item!['isProfessional']
-                              ? item!['customerId']
-                              : null,
+                          },
+                          icon: Icon(Icons.phone_outlined, size: 17),
+                          label: Text('Wac'),
                         ),
+                      FilledButton.icon(
+                        onPressed: () => open(
+                          c,
+                          ChatPage(
+                            pro: item!['professionalId'],
+                            name: item!['professional'],
+                            customer: item!['isProfessional']
+                                ? item!['customerId']
+                                : null,
+                          ),
+                        ),
+                        icon: Icon(Icons.chat_bubble_outline, size: 17),
+                        label: Text('Fariin'),
                       ),
-                      icon: Icon(Icons.chat_bubble_outline, size: 17),
-                      label: Text('Fariin'),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
                 SizedBox(height: 22),
               ] else
                 Padding(
                   padding: EdgeInsets.only(bottom: 20),
                   child: Text(
-                    'Waxaan raadineynaa xirfadle. Marka la kuu xilsaaro, magaciisa iyo xiriirkiisa halkan ayay ka muuqanayaan.',
+                    'Kooxda adeegga ayaa eegaysa dalabkaaga. Marka ay kuu xilsaaro xirfadle, magaciisa iyo xiriirkiisa halkan ayay ka muuqanayaan.',
                     style: TextStyle(color: muted, fontSize: 12),
                   ),
                 ),

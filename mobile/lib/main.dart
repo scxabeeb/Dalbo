@@ -572,12 +572,20 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                 onPressed: pro!['acceptingRequests']
                     ? () async {
                         if (await ensureLogin(c) && c.mounted) {
-                          await open(c, BookPage(pro: pro!));
+                          await open(
+                            c,
+                            ServiceRequestForm(
+                              category: {
+                                'id': pro!['categoryId'],
+                                'name': pro!['category'],
+                              },
+                            ),
+                          );
                         }
                       }
                     : null,
                 icon: Icon(Icons.calendar_month_outlined),
-                label: Text('Request appointment'),
+                label: Text('Send request to dispatch'),
               ),
               OutlinedButton.icon(
                 onPressed: () async {
@@ -1610,13 +1618,13 @@ class Account extends StatelessWidget {
         ),
         ListTile(
           leading: Icon(Icons.event_outlined, color: brandNavy),
-          title: Text('Ballamaha'),
+          title: Text('Dalabyada'),
           trailing: Icon(Icons.chevron_right),
           onTap: () => open(
             c,
             Scaffold(
-              appBar: AppBar(title: Text('Ballamaha')),
-              body: Bookings(),
+              appBar: AppBar(title: Text('Dalabyada')),
+              body: ServiceOrders(),
             ),
           ),
         ),

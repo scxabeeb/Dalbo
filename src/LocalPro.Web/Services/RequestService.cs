@@ -44,6 +44,7 @@ public class RequestService(AppDbContext db,IWebHostEnvironment env){
  var uid=User(user);var admin=user.IsInRole("Admin");var pro=r.ProfessionalId.HasValue?await db.Professionals.FindAsync(r.ProfessionalId):null;var owner=pro?.UserId==uid;
  if(action=="assign"&&admin&&(r.Status==ServiceRequestStatus.Received||r.Status==ServiceRequestStatus.Assigned)){
  var assigned=await db.Professionals.SingleOrDefaultAsync(p=>p.Id==professionalId&&p.Approved&&p.AcceptingRequests&&p.CategoryId==r.CategoryId)??throw new RuleException("Dooro xirfadle la oggolaaday oo adeeggan bixiya.");
+ if(pro!=null&&pro.Id!=assigned.Id)db.Notifications.Add(new(){UserId=pro.UserId,Text=$"Dalab #{id} waxaa loo wareejiyay xirfadle kale.",Link="/Requests"});
  if(assigned.UserId==r.CustomerId)throw new RuleException("Qofku dalabkiisa iskuma qaban karo.");r.ProfessionalId=assigned.Id;r.Status=ServiceRequestStatus.Assigned;
  db.Notifications.Add(new(){UserId=assigned.UserId,Text=$"Dalab #{id} ayaa laguu xilsaaray.",Link=$"/Requests/Track/{id}"});
  }else if(action=="cancel"&&(uid==r.CustomerId||admin)&&(r.Status==ServiceRequestStatus.Received||r.Status==ServiceRequestStatus.Assigned||r.Status==ServiceRequestStatus.OnTheWay))r.Status=ServiceRequestStatus.Cancelled;
@@ -56,5 +57,5 @@ public class RequestService(AppDbContext db,IWebHostEnvironment env){
  if(action=="cancel"&&pro!=null)db.Notifications.Add(new(){UserId=pro.UserId,Text=$"Dalab #{id} waa la joojiyay.",Link=$"/Requests/Track/{id}"});
  await db.SaveChangesAsync();await tx.CommitAsync();
  }
- public static object Dto(ServiceRequest r,string uid)=>new{r.Id,r.CategoryId,category=r.Category.Name,icon=r.Category.Icon,r.Description,r.Address,r.City,r.When,r.PaymentPreference,r.VisitFee,status=r.Status.ToString(),statusLabel=ServiceCatalog.Status(r.Status),r.CreatedUtc,r.UpdatedUtc,r.ProfessionalId,professional=r.Professional?.Name,phone=r.Professional?.Phone,r.CustomerId,isProfessional=r.Professional?.UserId==uid,hasPhoto=r.PhotoFile!=null,events=r.Events.OrderBy(e=>e.CreatedUtc).ThenBy(e=>e.Id).Select(e=>new{status=e.Status.ToString(),label=ServiceCatalog.Status(e.Status),e.CreatedUtc})};
+ public static object Dto(ServiceRequest r,string uid)=>new{r.Id,r.CategoryId,category=r.Category.Name,icon=r.Category.Icon,r.Description,r.Address,r.City,r.When,r.PaymentPreference,r.VisitFee,status=r.Status.ToString(),statusLabel=ServiceCatalog.Status(r.Status),r.CreatedUtc,r.UpdatedUtc,r.ProfessionalId,professional=r.Professional?.Name,phone=r.Status==ServiceRequestStatus.Cancelled?null:r.Professional?.Phone,canCommunicate=r.ProfessionalId.HasValue&&r.Status!=ServiceRequestStatus.Received&&r.Status!=ServiceRequestStatus.Cancelled,r.CustomerId,isProfessional=r.Professional?.UserId==uid,hasPhoto=r.PhotoFile!=null,events=r.Events.OrderBy(e=>e.CreatedUtc).ThenBy(e=>e.Id).Select(e=>new{status=e.Status.ToString(),label=ServiceCatalog.Status(e.Status),e.CreatedUtc})};
 }

@@ -13,7 +13,7 @@ The latest owner reference is [DANXALIYE App](https://claude.ai/artifact/YXtg4LH
 - Administrators assign an approved professional for the requested category at `/Dispatch` and configure optional visit fees.
 - Customers and assigned professionals track Received → Assigned → OnTheWay → InProgress → Completed, with event timestamps and notifications.
 - Customers can edit before departure and cancel before work starts. Tracking refreshes automatically.
-- The original professional directory, direct appointments, chat, reviews and saved professionals remain available as secondary capabilities.
+- Clients cannot choose or contact a professional before dispatch assignment. Profiles and chat are restricted to assigned relationships. Direct booking is disabled. Reassignment and cancellation revoke the corresponding contact access.
 
 Mobile Money is a recorded preference, not a processed payment. No GPS tracking or ETA calculation is connected. The original DANXALIYE logo is extracted from the supplied high-quality PDF and used throughout the web/mobile app and launcher icons.
 
