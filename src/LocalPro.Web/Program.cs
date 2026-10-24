@@ -11,20 +11,35 @@ builder.Services.AddRazorPages(o=>{o.Conventions.AuthorizeFolder("/Account");o.C
 builder.Services.AddDbContext<AppDbContext>(o=>o.UseMySql(builder.Configuration.GetConnectionString("Default"),new MySqlServerVersion(new Version(8,4,0))));
 builder.Services.AddIdentityApiEndpoints<AppUser>(o=>{o.Password.RequiredLength=10;o.User.RequireUniqueEmail=true;o.Lockout.MaxFailedAccessAttempts=5;}).AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddAuthentication(o=>{o.DefaultChallengeScheme=IdentityConstants.ApplicationScheme;o.DefaultForbidScheme=IdentityConstants.ApplicationScheme;});
+builder.Services.Configure<SecurityStampValidatorOptions>(o=>o.ValidationInterval=TimeSpan.Zero);
 builder.Services.ConfigureApplicationCookie(o=>{o.LoginPath="/Account/Login";o.Cookie.HttpOnly=true;o.Cookie.SameSite=SameSiteMode.Lax;o.AccessDeniedPath="/Denied";});
-builder.Services.AddScoped<Marketplace>();builder.Services.AddScoped<RequestService>();
+builder.Services.AddScoped<ConfigurationService>();builder.Services.AddScoped<Marketplace>();builder.Services.AddScoped<RequestService>();
 builder.WebHost.ConfigureKestrel(o=>o.Limits.MaxRequestBodySize=5*1024*1024);
 builder.Services.AddRateLimiter(o=>{o.RejectionStatusCode=429;o.AddPolicy("auth",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new(){PermitLimit=20,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));});
 var app=builder.Build();
 if(!app.Environment.IsDevelopment()){app.UseExceptionHandler("/Error");app.UseHsts();app.UseHttpsRedirection();}
 app.Use(async(ctx,next)=>{ctx.Response.Headers["X-Content-Type-Options"]="nosniff";ctx.Response.Headers["Referrer-Policy"]="same-origin";ctx.Response.Headers["Content-Security-Policy"]="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";try{await next();}catch(RuleException ex){if(ctx.Request.Path.StartsWithSegments("/api")){ctx.Response.StatusCode=400;await ctx.Response.WriteAsJsonAsync(new{error=ex.Message});}else throw;}});
 app.UseStaticFiles();app.UseRouting();app.UseRateLimiter();app.UseAuthentication();app.UseAuthorization();app.UseAntiforgery();
+app.Use(async (ctx,next)=>{
+ if(ctx.Request.Path.Equals("/api/auth/register",StringComparison.OrdinalIgnoreCase) && HttpMethods.IsPost(ctx.Request.Method) && !(await ctx.RequestServices.GetRequiredService<ConfigurationService>().Get()).RegistrationEnabled){ctx.Response.StatusCode=403;await ctx.Response.WriteAsJsonAsync(new{error="New account registration is currently closed."});return;}await next();
+});
+app.MapGet("/api/settings",async(ConfigurationService config,HttpContext ctx)=>{ctx.Response.Headers.CacheControl="no-store";return ConfigurationService.Public(await config.Get());});
+app.MapGet("/api/settings/logo",async(ConfigurationService config,HttpContext ctx)=>{var s=await config.Get();ctx.Response.Headers.CacheControl="no-cache";return s.Logo==null?Results.Redirect("/brand/danxaliye-logo.png"):Results.File(s.Logo,s.LogoContentType??"image/png");});
+app.MapGet("/brand/theme.css",async(ConfigurationService config,HttpContext ctx)=>{var s=await config.Get();ctx.Response.Headers.CacheControl="no-store";return Results.Text($":root{{--primary:{s.PrimaryColor};--ink:{s.PrimaryColor};--accent:{s.AccentColor};--mint:color-mix(in srgb,{s.AccentColor} 10%,white)}}", "text/css");});
+app.MapGet("/api/products",async(AppDbContext db,ConfigurationService config)=>{if(!(await config.Get()).ProductsEnabled)return Results.Ok(Array.Empty<object>());return Results.Ok(await db.Products.AsNoTracking().Where(p=>p.Active).OrderBy(p=>p.SortOrder).ThenBy(p=>p.Name).Select(p=>new{p.Id,p.Name,p.Description,p.Category,p.Price,p.Stock,imageUrl=p.Image==null?null:$"/api/products/{p.Id}/image?v={p.UpdatedUtc.Ticks}"}).ToListAsync());});
+app.MapGet("/api/products/{id:int}/image",async(int id,AppDbContext db,ConfigurationService config)=>{if(!(await config.Get()).ProductsEnabled)return Results.NotFound();var p=await db.Products.AsNoTracking().SingleOrDefaultAsync(p=>p.Id==id&&p.Active);return p?.Image==null?Results.NotFound():Results.File(p.Image,p.ImageContentType??"image/png");});
+app.MapPost("/api/register",async(RegistrationInput input,UserManager<AppUser> users,ConfigurationService config)=>{
+ if(!(await config.Get()).RegistrationEnabled)return Results.Json(new{error="New account registration is currently closed."},statusCode:403);
+ if(string.IsNullOrWhiteSpace(input.Name)||input.Name.Length>100||string.IsNullOrWhiteSpace(input.Email)||!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(input.Email)||input.Password!=input.ConfirmPassword||!input.Terms)return Results.BadRequest(new{error="Enter your name, a valid email, matching passwords and accept the terms."});
+ var user=new AppUser{UserName=input.Email.Trim(),Email=input.Email.Trim(),DisplayName=input.Name.Trim()};var result=await users.CreateAsync(user,input.Password??"");return result.Succeeded?Results.Ok():Results.ValidationProblem(result.Errors.GroupBy(e=>e.Code).ToDictionary(g=>g.Key,g=>g.Select(e=>e.Description).ToArray()));
+}).RequireRateLimiting("auth");
 app.MapRazorPages();app.MapGroup("/api/auth").MapIdentityApi<AppUser>().RequireRateLimiting("auth");
 app.MapGet("/api/categories",async(AppDbContext db)=>await db.Categories.AsNoTracking().Where(c=>c.Active).OrderBy(c=>c.SortOrder).ToListAsync());
 app.MapGet("/api/professionals",async(string? q,int? category,string? city,bool? available,Marketplace m)=>(await m.Search(q,category,city,available??false)).Select(PublicProfile));
 app.MapGet("/api/professionals/{id:int}",async(int id,Marketplace m)=>PublicProfile(await m.Profile(id)));
 var api=app.MapGroup("/api").RequireAuthorization(p=>p.AddAuthenticationSchemes(IdentityConstants.BearerScheme).RequireAuthenticatedUser());
-api.MapGet("/me",async(ClaimsPrincipal u,UserManager<AppUser> users,AppDbContext db)=>{var id=u.FindFirstValue(ClaimTypes.NameIdentifier)!;var account=await users.FindByIdAsync(id);return Results.Ok(new{id,email=account!.Email,name=account.DisplayName,professional=await db.Professionals.AsNoTracking().Where(p=>p.UserId==id).Select(p=>new{p.Id,p.Name,p.Approved}).FirstOrDefaultAsync()});});
+api.MapGet("/me",async(ClaimsPrincipal u,UserManager<AppUser> users,AppDbContext db)=>{var id=u.FindFirstValue(ClaimTypes.NameIdentifier)!;var account=await users.FindByIdAsync(id);return Results.Ok(new{id,email=account!.Email,name=account.DisplayName,isAdmin=await users.IsInRoleAsync(account,"Admin"),professional=await db.Professionals.AsNoTracking().Where(p=>p.UserId==id).Select(p=>new{p.Id,p.Name,p.Approved}).FirstOrDefaultAsync()});});
+api.MapPost("/profile",async(ProfileInput input,ClaimsPrincipal u,UserManager<AppUser> users)=>{if(string.IsNullOrWhiteSpace(input.Name)||input.Name.Length>100)return Results.BadRequest(new{error="Enter your name (up to 100 characters)."});var account=await users.FindByIdAsync(Uid(u));account!.DisplayName=input.Name.Trim();var result=await users.UpdateAsync(account);return result.Succeeded?Results.Ok():Results.BadRequest(new{error="Unable to update your profile."});});
 api.MapGet("/appointments",async(ClaimsPrincipal u,Marketplace m)=>(await m.Appointments(Uid(u))).Select(a=>new{a.Id,a.ProfessionalId,professional=a.Professional.Name,a.CustomerId,customer=a.Customer.DisplayName,a.StartUtc,a.EndUtc,status=a.Status.ToString(),a.Description,a.Address,a.ProposedStartUtc,a.ProposedById,isProfessional=a.Professional.UserId==Uid(u)}));
 api.MapPost("/appointments",async(BookingInput input,ClaimsPrincipal u,Marketplace m)=>{var a=await m.Book(Uid(u),input.ProfessionalId,input.StartUtc,input.Description,input.Address);return Results.Ok(new{a.Id,status=a.Status.ToString()});});
 api.MapPost("/appointments/{id:int}/action",async(int id,ActionInput input,ClaimsPrincipal u,Marketplace m)=>{await m.Transition(Uid(u),id,input.Action,input.ProposedStartUtc);return Results.Ok();});
@@ -49,6 +64,9 @@ api.MapPost("/service-requests/{id:int}/action",async(int id,RequestActionInput 
 api.MapGet("/service-requests/{id:int}/photo",async(int id,ClaimsPrincipal u,RequestService service,HttpContext context)=>{var p=await service.Photo(u,id);context.Response.Headers.CacheControl="private, no-store";return Results.File(p.Bytes,p.Type);});
 app.MapGet("/health",()=>Results.Ok(new{status="ok"}));
 await using(var scope=app.Services.CreateAsyncScope()){await Seed.Run(scope.ServiceProvider,app.Environment.IsDevelopment()&&builder.Configuration.GetValue<bool>("SeedDemo"),builder.Configuration["DemoPassword"]);}
+if(builder.Configuration["grant-admin"] is string adminEmail){
+ await using var scope=app.Services.CreateAsyncScope();var users=scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();var user=await users.FindByEmailAsync(adminEmail.Trim());if(user==null)throw new InvalidOperationException("Register the administrator email before granting access.");var result=await users.AddToRoleAsync(user,"Admin");if(!result.Succeeded&&!await users.IsInRoleAsync(user,"Admin"))throw new InvalidOperationException("Unable to grant administrator access.");await users.UpdateSecurityStampAsync(user);var db=scope.ServiceProvider.GetRequiredService<AppDbContext>();db.AuditEvents.Add(new(){ActorId="local-administrator",Action=$"Granted administrator access to {user.Email}"});await db.SaveChangesAsync();Console.WriteLine("Administrator access granted. Sign out and sign in again.");return;
+}
 await app.RunAsync();
 static string Uid(ClaimsPrincipal u)=>u.FindFirstValue(ClaimTypes.NameIdentifier)!;
 static object PublicProfile(Professional p)=>new{p.Id,p.Name,p.City,p.Neighborhood,p.Bio,p.Phone,p.HourlyRate,p.YearsExperience,p.AcceptingRequests,p.StartHour,p.EndHour,category=p.Category.Name,p.CategoryId,icon=p.Category.Icon,rating=p.Reviews.Count>0?(double?)p.Reviews.Average(r=>r.Rating):null,reviewCount=p.Reviews.Count,reviews=p.Reviews.Select(r=>new{r.Rating,r.Text})};
@@ -66,3 +84,7 @@ public record ReportInput(string Reason);
 public record BlockInput(bool Blocked=true);
 
 public record RequestActionInput(string Action,int? ProfessionalId=null);
+
+public record ProfileInput(string Name);
+
+public record RegistrationInput(string Name,string Email,string Password,string ConfirmPassword,bool Terms);

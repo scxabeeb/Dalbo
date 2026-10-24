@@ -7,7 +7,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options):IdentityDbCont
  public DbSet<Appointment> Appointments=>Set<Appointment>(); public DbSet<Message> Messages=>Set<Message>(); public DbSet<Review> Reviews=>Set<Review>(); public DbSet<AuditEvent> AuditEvents=>Set<AuditEvent>();
  public DbSet<Notification> Notifications=>Set<Notification>();public DbSet<Favorite> Favorites=>Set<Favorite>();public DbSet<UserReport> Reports=>Set<UserReport>();public DbSet<UserBlock> Blocks=>Set<UserBlock>();
  public DbSet<ServiceRequest> ServiceRequests=>Set<ServiceRequest>();public DbSet<ServiceRequestEvent> ServiceRequestEvents=>Set<ServiceRequestEvent>();
+ public DbSet<SiteSettings> SiteSettings=>Set<SiteSettings>(); public DbSet<Product> Products=>Set<Product>();
  protected override void OnModelCreating(ModelBuilder b){base.OnModelCreating(b);
+ b.Entity<Product>().Property(p=>p.Price).HasPrecision(12,2);
  b.Entity<Category>().Property(c=>c.VisitFee).HasPrecision(10,2);
  b.Entity<ServiceRequest>().Property(c=>c.VisitFee).HasPrecision(10,2);
  b.Entity<ServiceRequest>().HasOne(r=>r.Customer).WithMany().HasForeignKey(r=>r.CustomerId).OnDelete(DeleteBehavior.Restrict);

@@ -1,4 +1,6 @@
 @page
 @model LocalPro.Web.Pages.Account.LoginModel
+@inject ConfigurationService Configuration
+@{var brand=await Configuration.Get();}
 @{ViewData["Title"]="Soo dhowow";}
-<section class="auth panel"><span class="eyebrow muted">KU SOO DHOWOW DANXALIYE</span><h1>Soo dhowow.</h1><p>Baahidaada, Xalkeeda.</p><form method="post"><div asp-validation-summary="All"></div><input type="hidden" asp-for="ReturnUrl"/><label class="field"><span>Cinwaanka iimaylka</span><input asp-for="Email" type="email" autocomplete="username" required/></label><label class="field"><span>Furaha sirta</span><input asp-for="Password" type="password" autocomplete="current-password" required/></label><button class="btn full" type="submit">Soo gal ↗</button></form><p>Akoon ma lihid? <a class="text-link" asp-page="Register">Isdiiwaangeli</a></p></section>
+<section class="auth panel"><span class="eyebrow muted">KU SOO DHOWOW @brand.AppName</span><h1>Soo dhowow.</h1><p>@brand.Tagline</p><form method="post"><div asp-validation-summary="All"></div><input type="hidden" asp-for="ReturnUrl"/><label class="field"><span>Cinwaanka iimaylka</span><input asp-for="Email" type="email" autocomplete="username" required/></label><label class="field"><span>Furaha sirta</span><input asp-for="Password" type="password" autocomplete="current-password" required/></label><button class="btn full" type="submit">Soo gal ↗</button></form><p>Akoon ma lihid? <a class="text-link" asp-page="Register">Isdiiwaangeli</a></p></section>

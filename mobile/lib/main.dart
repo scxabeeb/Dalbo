@@ -2,74 +2,104 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'api.dart';
+import 'branding.dart';
+import 'products.dart';
 import 'services_app.dart';
 
-const brandNavy = Color(0xFF0E305D);
-const brandOrange = Color(0xFFFF6B0B);
-const ink = Color(0xFF0E305D);
+Color get brandNavy => appBrand.value.primary;
+Color get brandOrange => appBrand.value.accent;
+Color get ink => appBrand.value.primary;
 const muted = Color(0xFF697382);
 const cream = Color(0xFFF5F6FA);
-const mint = Color(0xFFFFF1E7);
+Color get mint =>
+    Color.alphaBlend(appBrand.value.accent.withValues(alpha: .1), Colors.white);
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const DanxaliyeApp());
+  unawaited(refreshBrand());
+  runApp(DanxaliyeApp());
 }
 
-class DanxaliyeApp extends StatelessWidget {
+class DanxaliyeApp extends StatefulWidget {
   const DanxaliyeApp({super.key});
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'DANXALIYE',
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      useMaterial3: true,
-      scaffoldBackgroundColor: Colors.white,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: brandNavy,
-        primary: brandNavy,
-        surface: Colors.white,
-      ),
-      textTheme: const TextTheme(
-        bodyMedium: TextStyle(color: ink),
-        headlineMedium: TextStyle(
-          color: ink,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -1,
+  State<DanxaliyeApp> createState() => _DanxaliyeAppState();
+}
+
+class _DanxaliyeAppState extends State<DanxaliyeApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(refreshBrand());
+  }
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<AppBrand>(
+    valueListenable: appBrand,
+    builder: (context, brand, child) => MaterialApp(
+      title: brand.name,
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.white,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: brandNavy,
+          primary: brandNavy,
+          surface: Colors.white,
         ),
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
-        foregroundColor: ink,
-        centerTitle: false,
-        scrolledUnderElevation: 0,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.all(16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E7E0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E7E0)),
-        ),
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        textTheme: TextTheme(
+          bodyMedium: TextStyle(color: ink),
+          headlineMedium: TextStyle(
+            color: ink,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -1,
           ),
         ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: ink,
+          centerTitle: false,
+          scrolledUnderElevation: 0,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: EdgeInsets.all(16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Color(0xFFE0E7E0)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Color(0xFFE0E7E0)),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          indicatorColor: mint,
+        ),
       ),
-      navigationBarTheme: const NavigationBarThemeData(
-        backgroundColor: Colors.white,
-        indicatorColor: mint,
-      ),
+      home: Shell(),
     ),
-    home: const Shell(),
   );
 }
 
@@ -94,7 +124,7 @@ String localTime(dynamic value) {
   final raw = value.toString();
   final d = DateTime.parse(
     raw.endsWith('Z') ? raw : '${raw}Z',
-  ).toUtc().add(const Duration(hours: 3));
+  ).toUtc().add(Duration(hours: 3));
   return '${d.day}/${d.month}/${d.year} · ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')} EAT';
 }
 
@@ -120,14 +150,14 @@ class _ShellState extends State<Shell> {
   @override
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(
-      title: const DanxaliyeBrand(),
+      title: DanxaliyeBrand(),
       toolbarHeight: 76,
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 18),
+          padding: EdgeInsets.only(right: 18),
           child: Chip(
-            avatar: const Icon(Icons.location_on_outlined, size: 15),
-            label: const Text('Garowe', style: TextStyle(fontSize: 11)),
+            avatar: Icon(Icons.location_on_outlined, size: 15),
+            label: Text(appBrand.value.city, style: TextStyle(fontSize: 11)),
             backgroundColor: cream,
             side: BorderSide.none,
           ),
@@ -135,17 +165,19 @@ class _ShellState extends State<Shell> {
       ],
     ),
     body: loading
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : switch (tab) {
-            0 => const ServiceHome(),
-            1 => const ServiceCatalogScreen(),
-            2 => const ServiceOrders(),
+            0 => ServiceHome(),
+            1 => ServiceCatalogScreen(),
+            2 => ServiceOrders(),
+            4 =>
+              appBrand.value.productsEnabled ? ProductCatalog() : ServiceHome(),
             _ => Account(onChanged: () => setState(() {})),
           },
     bottomNavigationBar: NavigationBar(
-      selectedIndex: tab,
+      selectedIndex: tab == 4 && !appBrand.value.productsEnabled ? 0 : tab,
       onDestinationSelected: (v) => setState(() => tab = v),
-      destinations: const [
+      destinations: [
         NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Hoyga'),
         NavigationDestination(
           icon: Icon(Icons.grid_view_outlined),
@@ -159,6 +191,11 @@ class _ShellState extends State<Shell> {
           icon: Icon(Icons.person_outline_rounded),
           label: 'Akoonka',
         ),
+        if (appBrand.value.productsEnabled)
+          NavigationDestination(
+            icon: Icon(Icons.shopping_bag_outlined),
+            label: 'Products',
+          ),
       ],
     ),
   );
@@ -222,10 +259,10 @@ class _DiscoverState extends State<Discover> {
   Widget build(BuildContext c) => RefreshIndicator(
     onRefresh: load,
     child: ListView(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 30),
       children: [
         Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: cream,
             borderRadius: BorderRadius.circular(24),
@@ -233,7 +270,7 @@ class _DiscoverState extends State<Discover> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'YOUR NEIGHBORHOOD. YOUR EXPERTS.',
                 style: TextStyle(
                   fontSize: 9,
@@ -242,8 +279,8 @@ class _DiscoverState extends State<Discover> {
                   color: brandNavy,
                 ),
               ),
-              const SizedBox(height: 17),
-              const Text(
+              SizedBox(height: 17),
+              Text(
                 'A helping hand.\nJust around\nthe corner.',
                 style: TextStyle(
                   fontSize: 35,
@@ -253,29 +290,29 @@ class _DiscoverState extends State<Discover> {
                   color: ink,
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16),
+              Text(
                 'Good people. Great work. Right nearby.',
                 style: TextStyle(color: muted, fontSize: 12),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               TextField(
                 controller: search,
                 onSubmitted: (_) => load(),
                 decoration: InputDecoration(
                   hintText: 'What do you need help with?',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search),
                   suffixIcon: IconButton(
                     onPressed: load,
-                    icon: const Icon(Icons.arrow_forward_rounded),
+                    icon: Icon(Icons.arrow_forward_rounded),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               TextField(
                 controller: city,
                 onSubmitted: (_) => load(),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'City or neighborhood',
                   prefixIcon: Icon(Icons.location_on_outlined),
                 ),
@@ -283,8 +320,8 @@ class _DiscoverState extends State<Discover> {
             ],
           ),
         ),
-        const SizedBox(height: 28),
-        const Text(
+        SizedBox(height: 28),
+        Text(
           'What can we help with?',
           style: TextStyle(
             fontSize: 21,
@@ -292,15 +329,15 @@ class _DiscoverState extends State<Discover> {
             letterSpacing: -.6,
           ),
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
               Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: EdgeInsets.only(right: 8),
                 child: ChoiceChip(
-                  label: const Text('All services'),
+                  label: Text('All services'),
                   selected: category == null,
                   onSelected: (_) {
                     category = null;
@@ -310,7 +347,7 @@ class _DiscoverState extends State<Discover> {
               ),
               ...categories.map(
                 (cat) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: EdgeInsets.only(right: 8),
                   child: ChoiceChip(
                     avatar: Icon(categoryIcon(cat['id']), size: 18),
                     label: Text(cat['name']),
@@ -325,8 +362,8 @@ class _DiscoverState extends State<Discover> {
             ],
           ),
         ),
-        const SizedBox(height: 25),
-        const Text(
+        SizedBox(height: 25),
+        Text(
           'Meet your local experts',
           style: TextStyle(
             fontSize: 21,
@@ -336,7 +373,7 @@ class _DiscoverState extends State<Discover> {
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text(
+          title: Text(
             'Accepting requests',
             style: TextStyle(fontSize: 12, color: muted),
           ),
@@ -347,7 +384,7 @@ class _DiscoverState extends State<Discover> {
           },
         ),
         if (busy)
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(30),
             child: Center(child: CircularProgressIndicator()),
           )
@@ -357,7 +394,7 @@ class _DiscoverState extends State<Discover> {
             retry: load,
           )
         else if (pros.isEmpty)
-          const EmptyPanel(
+          EmptyPanel(
             icon: Icons.search_off,
             title: 'No matches yet',
             message: 'Try another service or neighborhood.',
@@ -375,10 +412,10 @@ class ProCard extends StatelessWidget {
   const ProCard({super.key, required this.pro, this.showAction = true});
   @override
   Widget build(BuildContext c) => Container(
-    margin: const EdgeInsets.only(bottom: 16),
-    padding: const EdgeInsets.all(20),
+    margin: EdgeInsets.only(bottom: 16),
+    padding: EdgeInsets.all(20),
     decoration: BoxDecoration(
-      border: Border.all(color: const Color(0xFFE4E9E5)),
+      border: Border.all(color: Color(0xFFE4E9E5)),
       borderRadius: BorderRadius.circular(20),
     ),
     child: Column(
@@ -391,63 +428,57 @@ class ProCard extends StatelessWidget {
               backgroundColor: mint,
               child: Text(
                 initials(pro['name']),
-                style: const TextStyle(
-                  color: brandNavy,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: brandNavy, fontWeight: FontWeight.w600),
               ),
             ),
-            const Spacer(),
+            Spacer(),
             StatusBadge(
               pro['acceptingRequests'] ? '● Accepting requests' : 'Unavailable',
             ),
           ],
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         Text(
           pro['category'],
-          style: const TextStyle(
+          style: TextStyle(
             color: brandNavy,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 5),
+        SizedBox(height: 5),
         Text(
           pro['name'],
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 21,
             fontWeight: FontWeight.w700,
             color: ink,
           ),
         ),
-        const SizedBox(height: 5),
+        SizedBox(height: 5),
         Text(
           '⌖ ${pro['neighborhood']}, ${pro['city']}',
-          style: const TextStyle(fontSize: 12, color: muted),
+          style: TextStyle(fontSize: 12, color: muted),
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         Text(
           '★ ${pro['rating'] ?? 'New'}  (${pro['reviewCount']} reviews)  ·  ${pro['yearsExperience']} years experience',
-          style: const TextStyle(fontSize: 11, color: muted),
+          style: TextStyle(fontSize: 11, color: muted),
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 10),
-          child: Divider(),
-        ),
+        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Divider()),
         Row(
           children: [
             Text(
               '\$${pro['hourlyRate']}',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
-            const Text(' / hour', style: TextStyle(fontSize: 11, color: muted)),
-            const Spacer(),
+            Text(' / hour', style: TextStyle(fontSize: 11, color: muted)),
+            Spacer(),
             OutlinedButton(
               onPressed: showAction
                   ? () => open(c, ProfessionalPage(id: pro['id']))
                   : null,
-              child: const Text('View profile ↗'),
+              child: Text('View profile ↗'),
             ),
           ],
         ),
@@ -461,12 +492,12 @@ class StatusBadge extends StatelessWidget {
   const StatusBadge(this.text, {super.key});
   @override
   Widget build(BuildContext c) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
     decoration: BoxDecoration(
       color: mint,
       borderRadius: BorderRadius.circular(20),
     ),
-    child: Text(text, style: const TextStyle(color: brandNavy, fontSize: 10)),
+    child: Text(text, style: TextStyle(color: brandNavy, fontSize: 10)),
   );
 }
 
@@ -501,42 +532,42 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
 
   @override
   Widget build(BuildContext c) => Scaffold(
-    appBar: AppBar(title: const Text('Your local expert')),
+    appBar: AppBar(title: Text('Your local expert')),
     body: error != null
         ? ErrorPanel(message: error!, retry: load)
         : pro == null
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : ListView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24),
             children: [
               ProCard(pro: pro!, showAction: false),
-              const Text(
+              Text(
                 'A little about me',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Text(pro!['bio']),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Text(
                 'Working hours: ${pro!['startHour']}:00–${pro!['endHour']}:00 EAT',
-                style: const TextStyle(color: muted),
+                style: TextStyle(color: muted),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8),
+              Text(
                 'Profile approved. Qualifications not independently verified.',
                 style: TextStyle(fontSize: 11, color: muted),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: () async {
                   if (await ensureLogin(c) && c.mounted) {
                     await open(c, ChatPage(pro: widget.id, name: pro!['name']));
                   }
                 },
-                icon: const Icon(Icons.chat_bubble_outline),
-                label: const Text('Start a conversation'),
+                icon: Icon(Icons.chat_bubble_outline),
+                label: Text('Start a conversation'),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: pro!['acceptingRequests']
                     ? () async {
@@ -545,8 +576,8 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                         }
                       }
                     : null,
-                icon: const Icon(Icons.calendar_month_outlined),
-                label: const Text('Request appointment'),
+                icon: Icon(Icons.calendar_month_outlined),
+                label: Text('Request appointment'),
               ),
               OutlinedButton.icon(
                 onPressed: () async {
@@ -563,8 +594,8 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                     }
                   }
                 },
-                icon: const Icon(Icons.favorite_border),
-                label: const Text('Save / unsave professional'),
+                icon: Icon(Icons.favorite_border),
+                label: Text('Save / unsave professional'),
               ),
               TextButton(
                 onPressed: () async {
@@ -572,7 +603,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                     await open(c, ReportPage(pro: widget.id));
                   }
                 },
-                child: const Text('Report or block this professional'),
+                child: Text('Report or block this professional'),
               ),
               if ('${pro!['phone']}'.isNotEmpty)
                 TextButton.icon(
@@ -582,16 +613,16 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                       toast(c, 'Phone number copied: ${pro!['phone']}');
                     }
                   },
-                  icon: const Icon(Icons.phone_outlined),
+                  icon: Icon(Icons.phone_outlined),
                   label: Text('Copy phone: ${pro!['phone']}'),
                 ),
-              const SizedBox(height: 24),
-              const Text(
+              SizedBox(height: 24),
+              Text(
                 'Customer reviews',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
               ),
               if ((pro!['reviews'] as List).isEmpty)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 12),
                   child: Text(
                     'No reviews yet. You could be their first customer.',
@@ -612,7 +643,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
 
 Future<bool> ensureLogin(BuildContext c) async {
   if (api.token != null) return true;
-  await open(c, const AuthPage());
+  await open(c, AuthPage());
   return api.token != null;
 }
 
@@ -623,17 +654,37 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  final email = TextEditingController(), password = TextEditingController();
+  final email = TextEditingController(),
+      password = TextEditingController(),
+      name = TextEditingController(),
+      confirm = TextEditingController();
   bool register = false, busy = false, terms = false;
   String? error;
   @override
   void dispose() {
+    name.dispose();
+    confirm.dispose();
     email.dispose();
     password.dispose();
     super.dispose();
   }
 
   Future<void> submit() async {
+    if (!email.text.trim().contains('@') ||
+        password.text.isEmpty ||
+        (register &&
+            (name.text.trim().isEmpty ||
+                name.text.trim().length > 100 ||
+                password.text != confirm.text))) {
+      setState(
+        () => error = 'Enter a valid email, full name and matching passwords.',
+      );
+      return;
+    }
+    if (register && !appBrand.value.registrationEnabled) {
+      setState(() => error = 'New account registration is currently closed.');
+      return;
+    }
     if (register && !terms) {
       setState(() => error = 'Accept the service terms to continue.');
       return;
@@ -645,11 +696,18 @@ class _AuthPageState extends State<AuthPage> {
     try {
       if (register) {
         await api.request(
-          '/auth/register',
-          body: {'email': email.text.trim(), 'password': password.text},
+          '/register',
+          body: {
+            'name': name.text.trim(),
+            'email': email.text.trim(),
+            'password': password.text,
+            'confirmPassword': confirm.text,
+            'terms': terms,
+          },
         );
       }
       await api.login(email.text.trim(), password.text);
+
       if (mounted) {
         Navigator.pop(context);
       }
@@ -668,37 +726,52 @@ class _AuthPageState extends State<AuthPage> {
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(),
     body: ListView(
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(28),
       children: [
-        const DanxaliyeBrand(),
-        const SizedBox(height: 30),
+        DanxaliyeBrand(),
+        SizedBox(height: 30),
         Text(
-          register ? 'Ku soo biir DANXALIYE.' : 'Soo dhowow.',
-          style: const TextStyle(
+          register ? 'Ku soo biir ${appBrand.value.name}.' : 'Soo dhowow.',
+          style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.w700,
             letterSpacing: -1,
           ),
         ),
-        const SizedBox(height: 10),
-        const Text('Baahidaada, Xalkeeda.', style: TextStyle(color: muted)),
-        const SizedBox(height: 30),
+        SizedBox(height: 10),
+        Text(appBrand.value.tagline, style: TextStyle(color: muted)),
+        SizedBox(height: 30),
+        if (register) ...[
+          TextField(
+            controller: name,
+            autofillHints: [AutofillHints.name],
+            maxLength: 100,
+            decoration: InputDecoration(labelText: 'Magaca oo buuxa'),
+          ),
+          SizedBox(height: 16),
+        ],
         TextField(
           controller: email,
           keyboardType: TextInputType.emailAddress,
-          autofillHints: const [AutofillHints.email],
-          decoration: const InputDecoration(labelText: 'Cinwaanka iimaylka'),
+          autofillHints: [AutofillHints.email],
+          decoration: InputDecoration(labelText: 'Cinwaanka iimaylka'),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         TextField(
           controller: password,
           obscureText: true,
-          autofillHints: const [AutofillHints.password],
-          decoration: const InputDecoration(labelText: 'Furaha sirta'),
+          autofillHints: [AutofillHints.password],
+          decoration: InputDecoration(labelText: 'Furaha sirta'),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         if (register) ...[
-          const Text(
+          TextField(
+            controller: confirm,
+            obscureText: true,
+            decoration: InputDecoration(labelText: 'Confirm password'),
+          ),
+          SizedBox(height: 12),
+          Text(
             '10+ characters, uppercase, lowercase, number and symbol.',
             style: TextStyle(fontSize: 11, color: muted),
           ),
@@ -706,22 +779,22 @@ class _AuthPageState extends State<AuthPage> {
             contentPadding: EdgeInsets.zero,
             value: terms,
             onChanged: (v) => setState(() => terms = v ?? false),
-            title: const Text(
+            title: Text(
               'I accept the provisional service terms.',
               style: TextStyle(fontSize: 12),
             ),
           ),
-          const Text(
-            'DANXALIYE stores account, message and booking data. Public business contacts are optional. Pay professionals directly. Profile approval does not certify qualifications. This is a development preview.',
+          Text(
+            '${appBrand.value.name} stores account, message and booking data. See the website for terms and privacy.',
             style: TextStyle(fontSize: 11, color: muted),
           ),
         ],
         if (error != null)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text(error!, style: const TextStyle(color: Colors.red)),
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text(error!, style: TextStyle(color: Colors.red)),
           ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         FilledButton(
           onPressed: busy ? null : submit,
           child: Text(
@@ -732,15 +805,18 @@ class _AuthPageState extends State<AuthPage> {
                 : 'Soo gal ↗',
           ),
         ),
-        TextButton(
-          onPressed: () => setState(() {
-            register = !register;
-            error = null;
-          }),
-          child: Text(
-            register ? 'Akoon ma leedahay? Soo gal' : 'Akoon cusub samee',
+        if (appBrand.value.registrationEnabled || register)
+          TextButton(
+            onPressed: busy
+                ? null
+                : () => setState(() {
+                    register = !register;
+                    error = null;
+                  }),
+            child: Text(
+              register ? 'Akoon ma leedahay? Soo gal' : 'Akoon cusub samee',
+            ),
           ),
-        ),
       ],
     ),
   );
@@ -780,7 +856,7 @@ class _BookPageState extends State<BookPage> {
         date!.month,
         date!.day,
         hour!,
-      ).subtract(const Duration(hours: 3));
+      ).subtract(Duration(hours: 3));
       await api.request(
         '/appointments',
         body: {
@@ -807,41 +883,41 @@ class _BookPageState extends State<BookPage> {
 
   @override
   Widget build(BuildContext c) => Scaffold(
-    appBar: AppBar(title: const Text('Book a helping hand')),
+    appBar: AppBar(title: Text('Book a helping hand')),
     body: ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24),
       children: [
         Text(
           widget.pro['name'],
-          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
         ),
         Text(
           '${widget.pro['category']} · From \$${widget.pro['hourlyRate']}/hour',
-          style: const TextStyle(color: muted),
+          style: TextStyle(color: muted),
         ),
-        const SizedBox(height: 25),
+        SizedBox(height: 25),
         OutlinedButton.icon(
           onPressed: () async {
             final d = await showDatePicker(
               context: c,
               firstDate: DateTime.now(),
-              lastDate: DateTime.now().add(const Duration(days: 90)),
+              lastDate: DateTime.now().add(Duration(days: 90)),
             );
             if (d != null) {
               setState(() => date = d);
             }
           },
-          icon: const Icon(Icons.calendar_today_outlined),
+          icon: Icon(Icons.calendar_today_outlined),
           label: Text(
             date == null
                 ? 'Select date'
                 : '${date!.day}/${date!.month}/${date!.year}',
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         DropdownButtonFormField<int>(
           initialValue: hour,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Time (East Africa Time, UTC+3)',
           ),
           items: [
@@ -857,26 +933,24 @@ class _BookPageState extends State<BookPage> {
           ],
           onChanged: (v) => setState(() => hour = v),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         TextField(
           controller: desc,
           maxLines: 4,
           maxLength: 2000,
-          decoration: const InputDecoration(
-            labelText: 'What do you need help with?',
-          ),
+          decoration: InputDecoration(labelText: 'What do you need help with?'),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         TextField(
           controller: address,
           maxLength: 300,
-          decoration: const InputDecoration(labelText: 'Service address'),
+          decoration: InputDecoration(labelText: 'Service address'),
         ),
-        const Text(
+        Text(
           'Your address is shared only with this professional. Pay directly after agreeing the final price. The appointment is reserved after confirmation.',
           style: TextStyle(color: muted, fontSize: 12),
         ),
-        const SizedBox(height: 25),
+        SizedBox(height: 25),
         FilledButton(
           onPressed: busy ? null : submit,
           child: Text(busy ? 'Sending…' : 'Request appointment ↗'),
@@ -939,12 +1013,12 @@ class _BookingsState extends State<Bookings> {
     final d = await showDatePicker(
       context: context,
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
+      lastDate: DateTime.now().add(Duration(days: 90)),
     );
     if (d == null || !mounted) return;
     final t = await showTimePicker(
       context: context,
-      initialTime: const TimeOfDay(hour: 10, minute: 0),
+      initialTime: TimeOfDay(hour: 10, minute: 0),
     );
     if (t == null || !mounted) return;
     if (t.minute != 0) {
@@ -959,7 +1033,7 @@ class _BookingsState extends State<Bookings> {
         d.month,
         d.day,
         t.hour,
-      ).subtract(const Duration(hours: 3)),
+      ).subtract(Duration(hours: 3)),
     );
   }
 
@@ -970,7 +1044,7 @@ class _BookingsState extends State<Bookings> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, state) => AlertDialog(
-          title: const Text('Share your experience'),
+          title: Text('Share your experience'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -986,14 +1060,14 @@ class _BookingsState extends State<Bookings> {
                 controller: text,
                 maxLength: 1000,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Your review'),
+                decoration: InputDecoration(labelText: 'Your review'),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             FilledButton(
               onPressed: () async {
@@ -1018,7 +1092,7 @@ class _BookingsState extends State<Bookings> {
                   }
                 }
               },
-              child: const Text('Submit'),
+              child: Text('Submit'),
             ),
           ],
         ),
@@ -1039,9 +1113,9 @@ class _BookingsState extends State<Bookings> {
     return RefreshIndicator(
       onRefresh: load,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         children: [
-          const Text(
+          Text(
             'Your appointments.',
             style: TextStyle(
               fontSize: 28,
@@ -1049,18 +1123,18 @@ class _BookingsState extends State<Bookings> {
               letterSpacing: -1,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             'Plans made simple. All times shown in EAT.',
             style: TextStyle(color: muted),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           if (error != null)
             ErrorPanel(message: error!, retry: load)
           else if (items == null)
-            const Center(child: CircularProgressIndicator())
+            Center(child: CircularProgressIndicator())
           else if (items!.isEmpty)
-            const EmptyPanel(
+            EmptyPanel(
               icon: Icons.calendar_month_outlined,
               title: 'Your calendar is clear',
               message: 'Find a local professional to request your first visit.',
@@ -1070,35 +1144,35 @@ class _BookingsState extends State<Bookings> {
               final owner = a['isProfessional'] as bool;
               final status = a['status'];
               return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(20),
+                margin: EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE4E9E5)),
+                  border: Border.all(color: Color(0xFFE4E9E5)),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     StatusBadge(status),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Text(
                       a['professional'],
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       localTime(a['startUtc']),
-                      style: const TextStyle(color: brandNavy, fontSize: 12),
+                      style: TextStyle(color: brandNavy, fontSize: 12),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Text(a['description']),
                     Text(
                       a['address'],
-                      style: const TextStyle(color: muted, fontSize: 12),
+                      style: TextStyle(color: muted, fontSize: 12),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -1113,27 +1187,27 @@ class _BookingsState extends State<Bookings> {
                         if (status == 'Requested' || status == 'Confirmed')
                           OutlinedButton(
                             onPressed: () => action(a['id'], 'cancel'),
-                            child: const Text('Cancel'),
+                            child: Text('Cancel'),
                           ),
                         if (owner && status == 'Confirmed')
                           FilledButton(
                             onPressed: () => action(a['id'], 'start'),
-                            child: const Text('Start work'),
+                            child: Text('Start work'),
                           ),
                         if (owner && status == 'InProgress')
                           FilledButton(
                             onPressed: () => action(a['id'], 'complete'),
-                            child: const Text('Complete'),
+                            child: Text('Complete'),
                           ),
                         if (status == 'Confirmed')
                           OutlinedButton(
                             onPressed: () => reschedule(a['id']),
-                            child: const Text('Reschedule'),
+                            child: Text('Reschedule'),
                           ),
                         if (!owner && status == 'Completed')
                           OutlinedButton(
                             onPressed: () => review(a['id']),
-                            child: const Text('Write review'),
+                            child: Text('Write review'),
                           ),
                         TextButton(
                           onPressed: () => open(
@@ -1144,19 +1218,19 @@ class _BookingsState extends State<Bookings> {
                               name: a['professional'],
                             ),
                           ),
-                          child: const Text('Message ↗'),
+                          child: Text('Message ↗'),
                         ),
                       ],
                     ),
                     if (a['proposedStartUtc'] != null) ...[
                       Text(
                         'Proposed: ${localTime(a['proposedStartUtc'])}',
-                        style: const TextStyle(fontSize: 12, color: muted),
+                        style: TextStyle(fontSize: 12, color: muted),
                       ),
                       if (a['proposedById'] != api.me?['id'])
                         TextButton(
                           onPressed: () => action(a['id'], 'accept-time'),
-                          child: const Text('Accept new time'),
+                          child: Text('Accept new time'),
                         ),
                     ],
                   ],
@@ -1213,9 +1287,9 @@ class _InboxState extends State<Inbox> {
     return RefreshIndicator(
       onRefresh: load,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         children: [
-          const Text(
+          Text(
             'Let’s talk.',
             style: TextStyle(
               fontSize: 30,
@@ -1223,17 +1297,17 @@ class _InboxState extends State<Inbox> {
               letterSpacing: -1,
             ),
           ),
-          const Text(
+          Text(
             'Great work starts with a conversation.',
             style: TextStyle(color: muted),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           if (error != null)
             ErrorPanel(message: error!, retry: load)
           else if (threads == null)
-            const Center(child: CircularProgressIndicator())
+            Center(child: CircularProgressIndicator())
           else if (threads!.isEmpty)
-            const EmptyPanel(
+            EmptyPanel(
               icon: Icons.chat_bubble_outline,
               title: 'Say hello',
               message: 'Open a professional profile to start a conversation.',
@@ -1241,8 +1315,8 @@ class _InboxState extends State<Inbox> {
           else
             ...threads!.map(
               (t) => ListTile(
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                leading: const CircleAvatar(
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                leading: CircleAvatar(
                   backgroundColor: mint,
                   child: Icon(Icons.chat_bubble_outline, color: brandNavy),
                 ),
@@ -1254,7 +1328,7 @@ class _InboxState extends State<Inbox> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Icon(Icons.chevron_right),
                 onTap: () async {
                   await open(
                     c,
@@ -1298,7 +1372,7 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     load();
-    refresh = Timer.periodic(const Duration(seconds: 5), (_) => load());
+    refresh = Timer.periodic(Duration(seconds: 5), (_) => load());
   }
 
   @override
@@ -1355,14 +1429,14 @@ class _ChatPageState extends State<ChatPage> {
         IconButton(
           onPressed: load,
           tooltip: 'Refresh messages',
-          icon: const Icon(Icons.refresh),
+          icon: Icon(Icons.refresh),
         ),
       ],
     ),
     body: SafeArea(
       child: Column(
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(10),
             child: Text(
               'Private conversation · Messages refresh automatically',
@@ -1373,9 +1447,9 @@ class _ChatPageState extends State<ChatPage> {
             child: error != null
                 ? ErrorPanel(message: error!, retry: load)
                 : items == null
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator())
                 : ListView(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
                     children: items!.map((m) {
                       final mine = m['senderId'] == api.me?['id'];
                       return Align(
@@ -1383,9 +1457,9 @@ class _ChatPageState extends State<ChatPage> {
                             ? Alignment.centerRight
                             : Alignment.centerLeft,
                         child: Container(
-                          constraints: const BoxConstraints(maxWidth: 290),
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(15),
+                          constraints: BoxConstraints(maxWidth: 290),
+                          margin: EdgeInsets.only(bottom: 12),
+                          padding: EdgeInsets.all(15),
                           decoration: BoxDecoration(
                             color: mine ? mint : cream,
                             borderRadius: BorderRadius.circular(16),
@@ -1394,13 +1468,10 @@ class _ChatPageState extends State<ChatPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(m['text']),
-                              const SizedBox(height: 5),
+                              SizedBox(height: 5),
                               Text(
                                 localTime(m['createdUtc']),
-                                style: const TextStyle(
-                                  fontSize: 9,
-                                  color: muted,
-                                ),
+                                style: TextStyle(fontSize: 9, color: muted),
                               ),
                             ],
                           ),
@@ -1410,7 +1481,7 @@ class _ChatPageState extends State<ChatPage> {
                   ),
           ),
           Padding(
-            padding: const EdgeInsets.all(15),
+            padding: EdgeInsets.all(15),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -1420,16 +1491,16 @@ class _ChatPageState extends State<ChatPage> {
                     minLines: 1,
                     maxLines: 4,
                     maxLength: 2000,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Write a message…',
                       counterText: '',
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 IconButton.filled(
                   onPressed: sending ? null : send,
-                  icon: const Icon(Icons.arrow_upward),
+                  icon: Icon(Icons.arrow_upward),
                 ),
               ],
             ),
@@ -1447,24 +1518,24 @@ class Account extends StatelessWidget {
   Widget build(BuildContext c) {
     if (api.token == null) return SignInPanel(onSignedIn: onChanged);
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24),
       children: [
-        const CircleAvatar(
+        CircleAvatar(
           radius: 35,
           backgroundColor: mint,
           child: Icon(Icons.person_outline, size: 34, color: brandNavy),
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         Text(
           api.me?['name']?.toString().isNotEmpty == true
               ? api.me!['name']
               : api.me?['email'] ?? 'Your profile',
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: 30),
         Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: cream,
             borderRadius: BorderRadius.circular(20),
@@ -1472,7 +1543,7 @@ class Account extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Your next customer\nis nearby.',
                 style: TextStyle(
                   fontSize: 28,
@@ -1480,86 +1551,93 @@ class Account extends StatelessWidget {
                   height: 1.15,
                 ),
               ),
-              const SizedBox(height: 14),
-              const Text(
+              SizedBox(height: 14),
+              Text(
                 'Put your skills on the map. Create or update your professional profile.',
                 style: TextStyle(color: muted),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               FilledButton(
-                onPressed: () => open(c, const ProfessionalEditor()),
-                child: const Text('Akoonka xirfadlaha ↗'),
+                onPressed: () => open(c, ProfessionalEditor()),
+                child: Text('Akoonka xirfadlaha ↗'),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
+        if (api.me?['isAdmin'] == true)
+          ListTile(
+            leading: Icon(Icons.settings_outlined, color: brandNavy),
+            title: Text('Brand, products & users'),
+            subtitle: Text('Open the administration website'),
+            onTap: () => open(c, AdminLinkPage()),
+          ),
         ListTile(
-          leading: const Icon(Icons.favorite_border, color: brandNavy),
-          title: const Text('Xirfadlayaasha la kaydiyay'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => open(c, const SavedPage()),
+          leading: Icon(Icons.favorite_border, color: brandNavy),
+          title: Text('Xirfadlayaasha la kaydiyay'),
+          trailing: Icon(Icons.chevron_right),
+          onTap: () => open(c, SavedPage()),
         ),
         ListTile(
-          leading: const Icon(Icons.notifications_none, color: brandNavy),
-          title: const Text('Ogeysiisyada'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => open(c, const UpdatesPage()),
+          leading: Icon(Icons.notifications_none, color: brandNavy),
+          title: Text('Ogeysiisyada'),
+          trailing: Icon(Icons.chevron_right),
+          onTap: () => open(c, UpdatesPage()),
         ),
         ListTile(
-          leading: const Icon(Icons.chat_bubble_outline, color: brandNavy),
-          title: const Text('Fariimaha'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(Icons.chat_bubble_outline, color: brandNavy),
+          title: Text('Fariimaha'),
+          trailing: Icon(Icons.chevron_right),
           onTap: () => open(
             c,
             Scaffold(
-              appBar: AppBar(title: const Text('Fariimaha')),
-              body: const Inbox(),
+              appBar: AppBar(title: Text('Fariimaha')),
+              body: Inbox(),
             ),
           ),
         ),
         ListTile(
-          leading: const Icon(Icons.people_outline, color: brandNavy),
-          title: const Text('Xirfadlayaasha'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(Icons.people_outline, color: brandNavy),
+          title: Text('Xirfadlayaasha'),
+          trailing: Icon(Icons.chevron_right),
           onTap: () => open(
             c,
             Scaffold(
-              appBar: AppBar(title: const Text('Xirfadlayaasha')),
-              body: const Discover(),
+              appBar: AppBar(title: Text('Xirfadlayaasha')),
+              body: Discover(),
             ),
           ),
         ),
         ListTile(
-          leading: const Icon(Icons.event_outlined, color: brandNavy),
-          title: const Text('Ballamaha'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(Icons.event_outlined, color: brandNavy),
+          title: Text('Ballamaha'),
+          trailing: Icon(Icons.chevron_right),
           onTap: () => open(
             c,
             Scaffold(
-              appBar: AppBar(title: const Text('Ballamaha')),
-              body: const Bookings(),
+              appBar: AppBar(title: Text('Ballamaha')),
+              body: Bookings(),
             ),
           ),
         ),
-        const SizedBox(height: 25),
-        const Text(
+        SizedBox(height: 25),
+        Text(
           'Development preview. Payments are arranged directly with professionals. Account verification and production support are not enabled yet.',
           style: TextStyle(fontSize: 12, color: muted),
         ),
         ListTile(
-          leading: const Icon(Icons.block_outlined, color: brandNavy),
-          title: const Text('Xirfadlayaasha la xannibay'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => open(c, const BlocksPage()),
+          leading: Icon(Icons.block_outlined, color: brandNavy),
+          title: Text('Xirfadlayaasha la xannibay'),
+          trailing: Icon(Icons.chevron_right),
+          onTap: () => open(c, BlocksPage()),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: 30),
         OutlinedButton(
           onPressed: () async {
             await api.logout();
             onChanged();
           },
-          child: const Text('Ka bax'),
+          child: Text('Ka bax'),
         ),
       ],
     );
@@ -1574,7 +1652,7 @@ class ProfessionalEditor extends StatefulWidget {
 
 class _ProfessionalEditorState extends State<ProfessionalEditor> {
   final name = TextEditingController(),
-      city = TextEditingController(text: 'Garowe'),
+      city = TextEditingController(text: appBrand.value.city),
       area = TextEditingController(),
       bio = TextEditingController(),
       phone = TextEditingController(),
@@ -1675,7 +1753,7 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
     bool number = false,
     int lines = 1,
   }) => Padding(
-    padding: const EdgeInsets.only(bottom: 16),
+    padding: EdgeInsets.only(bottom: 16),
     child: TextField(
       controller: t,
       maxLines: lines,
@@ -1685,23 +1763,23 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
   );
   @override
   Widget build(BuildContext c) => Scaffold(
-    appBar: AppBar(title: const Text('Your professional profile')),
+    appBar: AppBar(title: Text('Your professional profile')),
     body: busy
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : error != null
         ? ErrorPanel(message: error!, retry: load)
         : ListView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24),
             children: [
-              const Text(
+              Text(
                 'Great work starts with you.',
                 style: TextStyle(fontSize: 27, fontWeight: FontWeight.w700),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               field('Name or business name', name),
               DropdownButtonFormField<int>(
                 initialValue: category,
-                decoration: const InputDecoration(labelText: 'Your specialty'),
+                decoration: InputDecoration(labelText: 'Your specialty'),
                 items: categories
                     .map(
                       (c) => DropdownMenuItem<int>(
@@ -1712,34 +1790,34 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
                     .toList(),
                 onChanged: (v) => category = v,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               field('City', city),
               field('Neighborhood', area),
               field('About your services', bio, lines: 4),
               field('Public phone (optional)', phone),
-              const Text(
+              Text(
                 'Entering a phone number makes it publicly visible.',
                 style: TextStyle(fontSize: 11, color: muted),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               field('Starting hourly rate (USD)', rate, number: true),
               field('Years of experience', years, number: true),
               field('Start hour (0–23, EAT)', start, number: true),
               field('End hour (1–24, EAT)', end, number: true),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Accepting requests'),
+                title: Text('Accepting requests'),
                 value: accepting,
                 onChanged: (v) => setState(() => accepting = v),
               ),
-              const Text(
+              Text(
                 'Profile changes require administrator approval before publication.',
                 style: TextStyle(fontSize: 12, color: muted),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               FilledButton(
                 onPressed: save,
-                child: const Text('Submit for approval ↗'),
+                child: Text('Submit for approval ↗'),
               ),
             ],
           ),
@@ -1757,7 +1835,7 @@ class EmptyPanel extends StatelessWidget {
   });
   @override
   Widget build(BuildContext c) => Container(
-    padding: const EdgeInsets.all(32),
+    padding: EdgeInsets.all(32),
     decoration: BoxDecoration(
       color: cream,
       borderRadius: BorderRadius.circular(18),
@@ -1765,16 +1843,16 @@ class EmptyPanel extends StatelessWidget {
     child: Column(
       children: [
         Icon(icon, size: 42, color: brandNavy),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         Text(
           title,
-          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: muted),
+          style: TextStyle(color: muted),
         ),
       ],
     ),
@@ -1788,15 +1866,15 @@ class ErrorPanel extends StatelessWidget {
   @override
   Widget build(BuildContext c) => Center(
     child: Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.wifi_off_rounded, size: 40, color: muted),
-          const SizedBox(height: 15),
+          Icon(Icons.wifi_off_rounded, size: 40, color: muted),
+          SizedBox(height: 15),
           Text(message, textAlign: TextAlign.center),
-          const SizedBox(height: 15),
-          OutlinedButton(onPressed: retry, child: const Text('Try again')),
+          SizedBox(height: 15),
+          OutlinedButton(onPressed: retry, child: Text('Try again')),
         ],
       ),
     ),
@@ -1809,33 +1887,33 @@ class SignInPanel extends StatelessWidget {
   @override
   Widget build(BuildContext c) => Center(
     child: Padding(
-      padding: const EdgeInsets.all(35),
+      padding: EdgeInsets.all(35),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.waving_hand_outlined, color: brandNavy, size: 50),
-          const SizedBox(height: 20),
-          const Text(
-            'Ku soo dhowow DANXALIYE.',
+          Icon(Icons.waving_hand_outlined, color: brandNavy, size: 50),
+          SizedBox(height: 20),
+          Text(
+            'Ku soo dhowow ${appBrand.value.name}.',
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
               letterSpacing: -.7,
             ),
           ),
-          const SizedBox(height: 12),
-          const Text(
+          SizedBox(height: 12),
+          Text(
             'Soo gal si aad u dalbato adeeg, ula hadasho xirfadle, oo aad ula socoto dalabkaaga.',
             textAlign: TextAlign.center,
             style: TextStyle(color: muted),
           ),
-          const SizedBox(height: 25),
+          SizedBox(height: 25),
           FilledButton(
             onPressed: () async {
-              await open(c, const AuthPage());
+              await open(c, AuthPage());
               onSignedIn();
             },
-            child: const Text('Soo gal ama isdiiwaangeli ↗'),
+            child: Text('Soo gal ama isdiiwaangeli ↗'),
           ),
         ],
       ),
@@ -1876,18 +1954,18 @@ class _SavedPageState extends State<SavedPage> {
 
   @override
   Widget build(BuildContext c) => Scaffold(
-    appBar: AppBar(title: const Text('Xirfadlayaasha la kaydiyay')),
+    appBar: AppBar(title: Text('Xirfadlayaasha la kaydiyay')),
     body: error != null
         ? ErrorPanel(message: error!, retry: load)
         : items == null
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : RefreshIndicator(
             onRefresh: load,
             child: ListView(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               children: items!.isEmpty
                   ? [
-                      const EmptyPanel(
+                      EmptyPanel(
                         icon: Icons.favorite_border,
                         title: 'Your shortlist starts here',
                         message:
@@ -1936,7 +2014,7 @@ class _UpdatesPageState extends State<UpdatesPage> {
   @override
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(
-      title: const Text('Ogeysiisyada'),
+      title: Text('Ogeysiisyada'),
       actions: [
         IconButton(
           tooltip: 'Mark all as read',
@@ -1950,21 +2028,21 @@ class _UpdatesPageState extends State<UpdatesPage> {
               }
             }
           },
-          icon: const Icon(Icons.done_all),
+          icon: Icon(Icons.done_all),
         ),
       ],
     ),
     body: error != null
         ? ErrorPanel(message: error!, retry: load)
         : items == null
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : RefreshIndicator(
             onRefresh: load,
             child: ListView(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               children: items!.isEmpty
                   ? [
-                      const EmptyPanel(
+                      EmptyPanel(
                         icon: Icons.notifications_none,
                         title: 'You’re all caught up',
                         message:
@@ -1974,9 +2052,7 @@ class _UpdatesPageState extends State<UpdatesPage> {
                   : items!
                         .map(
                           (n) => ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                            ),
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
                             leading: Icon(
                               n['read']
                                   ? Icons.notifications_none
@@ -2011,28 +2087,28 @@ class _ReportPageState extends State<ReportPage> {
 
   @override
   Widget build(BuildContext c) => Scaffold(
-    appBar: AppBar(title: const Text('Report a concern')),
+    appBar: AppBar(title: Text('Report a concern')),
     body: ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24),
       children: [
-        const Text(
+        Text(
           'Help keep the neighborhood safe.',
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         TextField(
           controller: reason,
           maxLines: 5,
           maxLength: 2000,
-          decoration: const InputDecoration(labelText: 'What happened?'),
+          decoration: InputDecoration(labelText: 'What happened?'),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Also block messages'),
+          title: Text('Also block messages'),
           value: block,
           onChanged: (v) => setState(() => block = v),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         FilledButton(
           onPressed: busy
               ? null
@@ -2067,7 +2143,7 @@ class _ReportPageState extends State<ReportPage> {
                     }
                   }
                 },
-          child: const Text('Send report'),
+          child: Text('Send report'),
         ),
       ],
     ),
@@ -2107,16 +2183,16 @@ class _BlocksPageState extends State<BlocksPage> {
 
   @override
   Widget build(BuildContext c) => Scaffold(
-    appBar: AppBar(title: const Text('Xirfadlayaasha la xannibay')),
+    appBar: AppBar(title: Text('Xirfadlayaasha la xannibay')),
     body: error != null
         ? ErrorPanel(message: error!, retry: load)
         : items == null
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : ListView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
             children: items!.isEmpty
                 ? [
-                    const EmptyPanel(
+                    EmptyPanel(
                       icon: Icons.block_outlined,
                       title: 'No blocked accounts',
                       message:
@@ -2141,7 +2217,7 @@ class _BlocksPageState extends State<BlocksPage> {
                                 }
                               }
                             },
-                            child: const Text('Unblock'),
+                            child: Text('Unblock'),
                           ),
                         ),
                       )

@@ -6,12 +6,32 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api.dart';
+import 'branding.dart';
 import 'main.dart';
 
 class DanxaliyeBrand extends StatelessWidget {
   const DanxaliyeBrand({super.key});
   @override
-  Widget build(BuildContext c) => Image.asset('assets/brand/danxaliye-logo.png',width:120,height:60,fit:BoxFit.contain,semanticLabel:'DANXALIYE — Baahidaada, Xalkeeda.');
+  Widget build(BuildContext c) {
+    Widget fallback() => Image.asset(
+      'assets/brand/danxaliye-logo.png',
+      width: 120,
+      height: 60,
+      fit: BoxFit.contain,
+      semanticLabel: appBrand.value.name,
+    );
+    final path = appBrand.value.logoUrl;
+    return path == null
+        ? fallback()
+        : Image.network(
+            '${Api.base}$path',
+            width: 120,
+            height: 60,
+            fit: BoxFit.contain,
+            semanticLabel: appBrand.value.name,
+            errorBuilder: (c, e, s) => fallback(),
+          );
+  }
 }
 
 IconData serviceIcon(String name) => switch (name) {
@@ -45,7 +65,11 @@ class ServiceIcon extends StatelessWidget {
       color: mint,
       borderRadius: BorderRadius.circular(12),
     ),
-    child: Icon(serviceIcon(name), color: const Color(0xFFB84A00), size: 23),
+    child: Icon(
+      serviceIcon(name),
+      color: Color.lerp(brandOrange, Colors.black, .25)!,
+      size: 23,
+    ),
   );
 }
 
@@ -56,13 +80,13 @@ class SectionTitle extends StatelessWidget {
   const SectionTitle(this.title, {super.key, this.action, this.onTap});
   @override
   Widget build(BuildContext c) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
+    padding: EdgeInsets.only(bottom: 12),
     child: Row(
       children: [
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.w700,
               color: ink,
@@ -75,7 +99,10 @@ class SectionTitle extends StatelessWidget {
             onPressed: onTap,
             child: Text(
               action!,
-              style: const TextStyle(color: Color(0xFFB84A00), fontSize: 11),
+              style: TextStyle(
+                color: Color.lerp(brandOrange, Colors.black, .25)!,
+                fontSize: 11,
+              ),
             ),
           ),
       ],
@@ -87,20 +114,55 @@ class ServicesGrid extends StatelessWidget {
   final List<dynamic> categories;
   final Future<void> Function()? onReturn;
   final bool home;
-  const ServicesGrid(this.categories, {super.key, this.onReturn,this.home=false});
+  const ServicesGrid(
+    this.categories, {
+    super.key,
+    this.onReturn,
+    this.home = false,
+  });
   @override
   Widget build(BuildContext c) => GridView.builder(
     shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
+    physics: NeverScrollableScrollPhysics(),
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: home || MediaQuery.sizeOf(c).width > 650 ? 4 : 3,
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       mainAxisExtent: 112,
     ),
-    itemCount: categories.length+(home?1:0),
+    itemCount: categories.length + (home ? 1 : 0),
     itemBuilder: (c, i) {
-      if(home&&i==categories.length){return Material(color:Colors.white,borderRadius:BorderRadius.circular(14),child:InkWell(borderRadius:BorderRadius.circular(14),onTap:()=>open(c,Scaffold(appBar:AppBar(title:const Text('16 Adeeg')),body:const ServiceCatalogScreen())),child:const Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.grid_view_outlined,color:brandNavy,size:29),SizedBox(height:12),Text('Dhammaan',style:TextStyle(fontSize:10,color:ink,fontWeight:FontWeight.w600))])));}
+      if (home && i == categories.length) {
+        return Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => open(
+              c,
+              Scaffold(
+                appBar: AppBar(title: Text('Adeegyada')),
+                body: ServiceCatalogScreen(),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.grid_view_outlined, color: brandNavy, size: 29),
+                SizedBox(height: 12),
+                Text(
+                  'Dhammaan',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
       final cat = Map<String, dynamic>.from(categories[i]);
       return Material(
         color: Colors.white,
@@ -115,20 +177,20 @@ class ServicesGrid extends StatelessWidget {
           },
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFEAECF2)),
+              border: Border.all(color: Color(0xFFEAECF2)),
               borderRadius: BorderRadius.circular(14),
             ),
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ServiceIcon(cat['name']),
-                const SizedBox(height: 9),
+                SizedBox(height: 9),
                 Text(
                   cat['name'],
                   textAlign: TextAlign.center,
                   maxLines: 2,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: ink,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -168,6 +230,7 @@ class _ServiceHomeState extends State<ServiceHome> {
 
   Future<void> load() async {
     try {
+      await refreshBrand();
       final cats = await api.request('/categories');
       final requests = api.token == null
           ? []
@@ -193,15 +256,15 @@ class _ServiceHomeState extends State<ServiceHome> {
   Widget build(BuildContext c) => RefreshIndicator(
     onRefresh: load,
     child: ListView(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+      padding: EdgeInsets.fromLTRB(20, 10, 20, 30),
       children: [
-        const Text(
-          '⌖ Garowe, Puntland',
+        Text(
+          '⌖ ${appBrand.value.city}',
           style: TextStyle(fontSize: 11, color: muted),
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'Maxaad u baahan tahay\nmaanta?',
+        SizedBox(height: 8),
+        Text(
+          appBrand.value.heroTitle,
           style: TextStyle(
             fontSize: 28,
             height: 1.15,
@@ -209,35 +272,35 @@ class _ServiceHomeState extends State<ServiceHome> {
             fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         TextField(
           controller: search,
           onSubmitted: (q) => open(
             c,
             Scaffold(
-              appBar: AppBar(title: const Text('Adeegyada')),
+              appBar: AppBar(title: Text('Adeegyada')),
               body: ServiceCatalogScreen(initialQuery: q),
             ),
           ),
           decoration: InputDecoration(
             hintText: 'Raadi adeeg… (tusaale: Tuubiiste)',
-            hintStyle: const TextStyle(fontSize: 12),
-            prefixIcon: const Icon(Icons.search, size: 20),
+            hintStyle: TextStyle(fontSize: 12),
+            prefixIcon: Icon(Icons.search, size: 20),
             suffixIcon: IconButton(
               onPressed: () => open(
                 c,
                 Scaffold(
-                  appBar: AppBar(title: const Text('Adeegyada')),
+                  appBar: AppBar(title: Text('Adeegyada')),
                   body: ServiceCatalogScreen(initialQuery: search.text),
                 ),
               ),
-              icon: const Icon(Icons.arrow_forward, size: 19),
+              icon: Icon(Icons.arrow_forward, size: 19),
             ),
           ),
         ),
-        const SizedBox(height: 22),
+        SizedBox(height: 22),
         Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: brandNavy,
             borderRadius: BorderRadius.circular(20),
@@ -256,8 +319,10 @@ class _ServiceHomeState extends State<ServiceHome> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '16 ADEEG · HAL APP',
+                  Text(
+                    categories == null
+                        ? 'ADEEG · HAL APP'
+                        : '${categories!.length} ADEEG · HAL APP',
                     style: TextStyle(
                       color: Color(0xFFFFD4B6),
                       fontSize: 9,
@@ -265,11 +330,11 @@ class _ServiceHomeState extends State<ServiceHome> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  const Padding(
+                  SizedBox(height: 12),
+                  Padding(
                     padding: EdgeInsets.only(right: 70),
                     child: Text(
-                      'Farsamoyaqaan\nalbaabkaaga\nkuugu yimaada.',
+                      appBrand.value.heroDescription,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 23,
@@ -278,12 +343,12 @@ class _ServiceHomeState extends State<ServiceHome> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 17),
+                  SizedBox(height: 17),
                   FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: brandNavy,
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 11,
                       ),
@@ -291,11 +356,11 @@ class _ServiceHomeState extends State<ServiceHome> {
                     onPressed: () => open(
                       c,
                       Scaffold(
-                        appBar: AppBar(title: const Text('16 Adeeg')),
-                        body: const ServiceCatalogScreen(),
+                        appBar: AppBar(title: Text('Adeegyada')),
+                        body: ServiceCatalogScreen(),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Dalbo hadda ↗',
                       style: TextStyle(fontSize: 11),
                     ),
@@ -305,38 +370,42 @@ class _ServiceHomeState extends State<ServiceHome> {
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         SectionTitle(
           'Adeegyada ugu badan',
           action: 'Dhammaan',
           onTap: () => open(
             c,
             Scaffold(
-              appBar: AppBar(title: const Text('16 Adeeg')),
-              body: const ServiceCatalogScreen(),
+              appBar: AppBar(title: Text('Adeegyada')),
+              body: ServiceCatalogScreen(),
             ),
           ),
         ),
         if (error != null)
           ErrorPanel(message: error!, retry: load)
         else if (categories == null)
-          const Center(child: CircularProgressIndicator())
+          Center(child: CircularProgressIndicator())
         else
-          ServicesGrid(categories!.where((c)=>['Gaadiid Dalbo','Bajaaj Dalbo','Koronto-yaqaan','Tuubiiste','AC & Qaboojiye','Nadaafad','Mechanic'].contains(c['name'])).toList(), onReturn: load,home:true),
-        const SizedBox(height: 25),
+          ServicesGrid(
+            categories!.take(7).toList(),
+            onReturn: load,
+            home: true,
+          ),
+        SizedBox(height: 25),
         SectionTitle(
           'Dalabkaaga socda',
           action: 'Dhammaan',
           onTap: () => open(
             c,
             Scaffold(
-              appBar: AppBar(title: const Text('Dalabyada')),
-              body: const ServiceOrders(),
+              appBar: AppBar(title: Text('Dalabyada')),
+              body: ServiceOrders(),
             ),
           ),
         ),
         if (orders.isEmpty)
-          const EmptyPanel(
+          EmptyPanel(
             icon: Icons.receipt_long_outlined,
             title: 'Dalab cusub diyaar ma u tahay?',
             message: 'Dooro adeegga aad u baahan tahay si aad u bilowdo.',
@@ -402,10 +471,10 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
         )
         .toList();
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       children: [
         Container(
-          padding: const EdgeInsets.all(22),
+          padding: EdgeInsets.all(22),
           decoration: BoxDecoration(
             color: brandNavy,
             borderRadius: BorderRadius.circular(18),
@@ -413,71 +482,77 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '16 Adeeg',
+              Text(
+                'Adeegyada',
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
-              const Text(
+              Text(
                 'Hal meel ka hel adeeg kasta',
                 style: TextStyle(color: Color(0xFFCFD3E3), fontSize: 12),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: ['Dhammaan', 'Gaadiid', 'Guriga', 'Farsamo']
-                      .map(
-                        (g) => Padding(
-                          padding: const EdgeInsets.only(right: 7),
-                          child: ChoiceChip(
-                            showCheckmark: false,
-                            label: Text(
-                              g,
-                              style: TextStyle(
-                                color: group == g ? Colors.white : brandNavy,
-                                fontSize: 11,
+                  children:
+                      [
+                            'Dhammaan',
+                            ...{...?categories?.map((x) => '${x['group']}')},
+                          ]
+                          .map(
+                            (g) => Padding(
+                              padding: EdgeInsets.only(right: 7),
+                              child: ChoiceChip(
+                                showCheckmark: false,
+                                label: Text(
+                                  g,
+                                  style: TextStyle(
+                                    color: group == g
+                                        ? Colors.white
+                                        : brandNavy,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                selected: group == g,
+                                selectedColor: brandOrange,
+                                onSelected: (_) => setState(() => group = g),
                               ),
                             ),
-                            selected: group == g,
-                            selectedColor: const Color(0xFFB64B00),
-                            onSelected: (_) => setState(() => group = g),
-                          ),
-                        ),
-                      )
-                      .toList(),
+                          )
+                          .toList(),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         TextField(
           controller: search,
           onChanged: (v) => setState(() => query = v),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Raadi adeeg…',
             prefixIcon: Icon(Icons.search),
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         if (error != null)
           ErrorPanel(message: error!, retry: load)
         else if (filtered == null)
-          const Center(child: CircularProgressIndicator())
+          Center(child: CircularProgressIndicator())
         else if (filtered.isEmpty)
-          const EmptyPanel(
+          EmptyPanel(
             icon: Icons.search_off,
             title: 'Adeeg lama helin',
             message: 'Raadi magac kale ama dooro Dhammaan.',
           )
         else
           ServicesGrid(filtered),
-        const SizedBox(height: 20),
-        const Text(
+        SizedBox(height: 20),
+        Text(
           'Ma heli weyday? Doorasho kale raadi ama eeg xirfadlayaasha qaybta Akoonka.',
           style: TextStyle(fontSize: 11, color: muted),
         ),
@@ -497,7 +572,7 @@ class ServiceRequestForm extends StatefulWidget {
 class _ServiceRequestFormState extends State<ServiceRequestForm> {
   final description = TextEditingController(),
       address = TextEditingController(),
-      city = TextEditingController(text: 'Garowe');
+      city = TextEditingController(text: appBrand.value.city);
   String when = 'Now', payment = 'MobileMoney';
   Uint8List? photo;
   bool busy = false;
@@ -602,17 +677,14 @@ class _ServiceRequestFormState extends State<ServiceRequestForm> {
   ) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        title,
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-      ),
-      const SizedBox(height: 10),
+      Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+      SizedBox(height: 10),
       Row(
         children: values
             .map(
               (v) => Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 6),
+                  padding: EdgeInsets.only(right: 6),
                   child: ChoiceChip(
                     showCheckmark: false,
                     selected: selected == v.$1,
@@ -638,16 +710,16 @@ class _ServiceRequestFormState extends State<ServiceRequestForm> {
   @override
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(
-      title: const Text(
+      title: Text(
         'Samee Dalab',
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
       ),
     ),
     body: ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       children: [
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: brandNavy,
             borderRadius: BorderRadius.circular(15),
@@ -655,26 +727,23 @@ class _ServiceRequestFormState extends State<ServiceRequestForm> {
           child: Row(
             children: [
               ServiceIcon(widget.category['name']),
-              const SizedBox(width: 13),
+              SizedBox(width: 13),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       widget.category['name'],
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3),
                     Text(
                       widget.category['description'],
-                      style: const TextStyle(
-                        color: Color(0xFFD5D8E6),
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: Color(0xFFD5D8E6), fontSize: 11),
                     ),
                   ],
                 ),
@@ -682,12 +751,12 @@ class _ServiceRequestFormState extends State<ServiceRequestForm> {
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         TextField(
           controller: description,
           maxLength: 2000,
           maxLines: 4,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Sharax ciladda',
             hintText: 'Faahfaahin ka bixi waxa aad u baahan tahay…',
           ),
@@ -697,7 +766,7 @@ class _ServiceRequestFormState extends State<ServiceRequestForm> {
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
               onPressed: busy ? null : pick,
-              icon: const Icon(Icons.add_a_photo_outlined, size: 17),
+              icon: Icon(Icons.add_a_photo_outlined, size: 17),
               label: Text(photo == null ? 'Ku dar sawir' : 'Beddel sawirka'),
             ),
           ),
@@ -705,7 +774,7 @@ class _ServiceRequestFormState extends State<ServiceRequestForm> {
           Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 15),
+                padding: EdgeInsets.only(top: 8, bottom: 15),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.memory(
@@ -721,75 +790,73 @@ class _ServiceRequestFormState extends State<ServiceRequestForm> {
                 top: 10,
                 child: IconButton.filled(
                   onPressed: () => setState(() => photo = null),
-                  icon: const Icon(Icons.close, size: 17),
+                  icon: Icon(Icons.close, size: 17),
                 ),
               ),
             ],
           ),
-        const SizedBox(height: 16),
-        const Text(
+        SizedBox(height: 16),
+        Text(
           'Goobta',
           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         TextField(
           controller: city,
           maxLength: 80,
-          decoration: const InputDecoration(labelText: 'Magaalada'),
+          decoration: InputDecoration(labelText: 'Magaalada'),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         TextField(
           controller: address,
           maxLength: 300,
-          decoration: const InputDecoration(
-            labelText: 'Xaafadda iyo cinwaanka',
-          ),
+          decoration: InputDecoration(labelText: 'Xaafadda iyo cinwaanka'),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         options(
           'Goorma?',
           [('Now', 'Hadda'), ('Today', 'Maanta'), ('Tomorrow', 'Berri')],
           when,
           (v) => setState(() => when = v),
         ),
-        const SizedBox(height: 22),
+        SizedBox(height: 22),
         options(
           'Habka lacag bixinta',
           [('MobileMoney', 'Mobile Money'), ('Cash', 'Lacag caddaan')],
           payment,
           (v) => setState(() => payment = v),
         ),
-        const SizedBox(height: 16),
-        const Text(
+        SizedBox(height: 16),
+        Text(
           'Doorbid keliya. Lacag app-ka lagama qaadayo; qiimaha la heshiis xirfadlaha.',
           style: TextStyle(color: muted, fontSize: 11),
         ),
-        const SizedBox(height: 25),
-        const Divider(),
+        SizedBox(height: 25),
+        Divider(),
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text('Qiimaha booqashada', style: TextStyle(fontSize: 12)),
             ),
             Text(
               widget.category['visitFee'] == null
                   ? 'Waa la xaqiijinayaa'
                   : '\$${widget.category['visitFee']} USD',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
             ),
           ],
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         FilledButton(
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFFFF6B0B),
-            foregroundColor: const Color(0xFF192244),
+            backgroundColor: brandOrange,
+            foregroundColor: Color(0xFF192244),
           ),
           onPressed: busy ? null : submit,
           child: Text(busy ? 'Fadlan sug…' : 'Xaqiiji Dalabka ↗'),
         ),
-        const SizedBox(height: 12),
-        const Text(
+        SizedBox(height: 12),
+        Text(
           '“Hadda” ma dammaanad qaado imaansho degdeg ah. Xirfadle ayaa marka hore laguu xilsaarayaa.',
           style: TextStyle(fontSize: 10, color: muted),
         ),
@@ -842,9 +909,9 @@ class _ServiceOrdersState extends State<ServiceOrders> {
     return RefreshIndicator(
       onRefresh: load,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         children: [
-          const Text(
+          Text(
             'Dalabyadaada',
             style: TextStyle(
               fontSize: 27,
@@ -852,17 +919,17 @@ class _ServiceOrdersState extends State<ServiceOrders> {
               letterSpacing: -.6,
             ),
           ),
-          const Text(
+          Text(
             'La soco tallaabo kasta.',
             style: TextStyle(color: muted, fontSize: 12),
           ),
-          const SizedBox(height: 23),
+          SizedBox(height: 23),
           if (error != null)
             ErrorPanel(message: error!, retry: load)
           else if (items == null)
-            const Center(child: CircularProgressIndicator())
+            Center(child: CircularProgressIndicator())
           else if (items!.isEmpty)
-            const EmptyPanel(
+            EmptyPanel(
               icon: Icons.receipt_long_outlined,
               title: 'Weli dalab ma samayn',
               message: 'Ka dooro adeegga qaybta Adeegyada.',
@@ -881,27 +948,27 @@ class RequestCard extends StatelessWidget {
   const RequestCard(this.item, {super.key, this.onReturn});
   @override
   Widget build(BuildContext c) => Container(
-    margin: const EdgeInsets.only(bottom: 12),
+    margin: EdgeInsets.only(bottom: 12),
     decoration: BoxDecoration(
       color: Colors.white,
-      border: Border.all(color: const Color(0xFFEAECF2)),
+      border: Border.all(color: Color(0xFFEAECF2)),
       borderRadius: BorderRadius.circular(14),
     ),
     child: ListTile(
-      contentPadding: const EdgeInsets.all(13),
+      contentPadding: EdgeInsets.all(13),
       leading: ServiceIcon(item['category']),
       title: Text(
         '${item['category']} · #${item['id']}',
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
       ),
       subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: EdgeInsets.only(top: 4),
         child: Text(
           item['statusLabel'],
-          style: const TextStyle(color: muted, fontSize: 11),
+          style: TextStyle(color: muted, fontSize: 11),
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, size: 17),
+      trailing: Icon(Icons.chevron_right, size: 17),
       onTap: () async {
         await open(c, ServiceTracking(id: item['id']));
         await onReturn?.call();
@@ -927,7 +994,7 @@ class _ServiceTrackingState extends State<ServiceTracking> {
   void initState() {
     super.initState();
     load();
-    timer = Timer.periodic(const Duration(seconds: 10), (_) => load());
+    timer = Timer.periodic(Duration(seconds: 10), (_) => load());
   }
 
   @override
@@ -978,7 +1045,7 @@ class _ServiceTrackingState extends State<ServiceTracking> {
             Uri.parse('${Api.base}/api/service-requests/${widget.id}/photo'),
             headers: {'Authorization': 'Bearer ${api.token}'},
           )
-          .timeout(const Duration(seconds: 20));
+          .timeout(Duration(seconds: 20));
       if (response.statusCode != 200) {
         throw Exception(
           'Sawirka lama heli karo. Dib u soo gal haddii loo baahdo.',
@@ -997,56 +1064,56 @@ class _ServiceTrackingState extends State<ServiceTracking> {
   @override
   Widget build(BuildContext c) => Scaffold(
     appBar: AppBar(
-      title: const Text('La soco Dalabka', style: TextStyle(fontSize: 18)),
+      title: Text('La soco Dalabka', style: TextStyle(fontSize: 18)),
       actions: [
         IconButton(
           onPressed: load,
           tooltip: 'Cusboonaysii',
-          icon: const Icon(Icons.refresh),
+          icon: Icon(Icons.refresh),
         ),
       ],
     ),
     body: error != null
         ? ErrorPanel(message: error!, retry: load)
         : item == null
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : ListView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
             children: [
               Container(
-                padding: const EdgeInsets.all(25),
+                padding: EdgeInsets.all(25),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F1F7),
+                  color: Color(0xFFF0F1F7),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ServiceIcon(item!['category']),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     Text(
                       'Dalab #${widget.id} · ${item!['category']}',
-                      style: const TextStyle(fontSize: 11, color: muted),
+                      style: TextStyle(fontSize: 11, color: muted),
                     ),
-                    const SizedBox(height: 9),
+                    SizedBox(height: 9),
                     Text(
                       item!['statusLabel'],
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.w800,
                         height: 1.2,
                         letterSpacing: -.5,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
+                    SizedBox(height: 12),
+                    Text(
                       'Waqtiga imaanshaha weli lama xaqiijin. Xaaladdu si toos ah ayay u cusboonaanaysaa.',
                       style: TextStyle(fontSize: 10, color: muted),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 22),
+              SizedBox(height: 22),
               if (item!['professional'] != null) ...[
                 ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -1054,14 +1121,14 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                     backgroundColor: mint,
                     child: Text(
                       initials(item!['professional']),
-                      style: const TextStyle(color: brandNavy),
+                      style: TextStyle(color: brandNavy),
                     ),
                   ),
                   title: Text(
                     item!['professional'],
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Xirfadle laguu xilsaaray',
                     style: TextStyle(fontSize: 11),
                   ),
@@ -1088,8 +1155,8 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                             }
                           }
                         },
-                        icon: const Icon(Icons.phone_outlined, size: 17),
-                        label: const Text('Wac'),
+                        icon: Icon(Icons.phone_outlined, size: 17),
+                        label: Text('Wac'),
                       ),
                     FilledButton.icon(
                       onPressed: () => open(
@@ -1102,14 +1169,14 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                               : null,
                         ),
                       ),
-                      icon: const Icon(Icons.chat_bubble_outline, size: 17),
-                      label: const Text('Fariin'),
+                      icon: Icon(Icons.chat_bubble_outline, size: 17),
+                      label: Text('Fariin'),
                     ),
                   ],
                 ),
-                const SizedBox(height: 22),
+                SizedBox(height: 22),
               ] else
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(bottom: 20),
                   child: Text(
                     'Waxaan raadineynaa xirfadle. Marka la kuu xilsaaro, magaciisa iyo xiriirkiisa halkan ayay ka muuqanayaan.',
@@ -1118,33 +1185,30 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                 ),
               ...(item!['events'] as List).map(
                 (e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 23),
+                  padding: EdgeInsets.only(bottom: 23),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 12,
                         backgroundColor: brandNavy,
                         child: Icon(Icons.check, size: 14, color: Colors.white),
                       ),
-                      const SizedBox(width: 14),
+                      SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               e['label'],
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             Text(
                               localTime(e['createdUtc']),
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: muted,
-                              ),
+                              style: TextStyle(fontSize: 10, color: muted),
                             ),
                           ],
                         ),
@@ -1153,12 +1217,12 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                   ),
                 ),
               ),
-              const Divider(),
-              Text(item!['description'], style: const TextStyle(fontSize: 13)),
-              const SizedBox(height: 12),
+              Divider(),
+              Text(item!['description'], style: TextStyle(fontSize: 13)),
+              SizedBox(height: 12),
               Text(
                 '⌖ ${item!['city']} · ${item!['address']}',
-                style: const TextStyle(color: muted, fontSize: 12),
+                style: TextStyle(color: muted, fontSize: 12),
               ),
               Text(
                 'Goorma: ${switch (item!['when']) {
@@ -1166,24 +1230,24 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                   'Today' => 'Maanta',
                   _ => 'Berri',
                 }}',
-                style: const TextStyle(color: muted, fontSize: 12),
+                style: TextStyle(color: muted, fontSize: 12),
               ),
               Text(
                 'Lacag bixinta: ${item!['paymentPreference'] == 'Cash' ? 'Lacag caddaan' : 'Mobile Money'} (doorbid keliya)',
-                style: const TextStyle(color: muted, fontSize: 11),
+                style: TextStyle(color: muted, fontSize: 11),
               ),
               if (item!['hasPhoto'])
                 TextButton.icon(
                   onPressed: showPhoto,
-                  icon: const Icon(Icons.image_outlined),
-                  label: const Text('Eeg sawirka ciladda'),
+                  icon: Icon(Icons.image_outlined),
+                  label: Text('Eeg sawirka ciladda'),
                 ),
               if (photo != null)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.memory(photo!),
                 ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               if (!item!['isProfessional'] &&
                   ['Received', 'Assigned'].contains(item!['status']))
                 OutlinedButton(
@@ -1203,23 +1267,23 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                       load();
                     }
                   },
-                  child: const Text('Beddel dalabka'),
+                  child: Text('Beddel dalabka'),
                 ),
               if (item!['isProfessional']) ...[
                 if (item!['status'] == 'Assigned')
                   FilledButton(
                     onPressed: busy ? null : () => act('depart'),
-                    child: const Text('Waan soo socdaa'),
+                    child: Text('Waan soo socdaa'),
                   ),
                 if (item!['status'] == 'OnTheWay')
                   FilledButton(
                     onPressed: busy ? null : () => act('start'),
-                    child: const Text('Bilow shaqada'),
+                    child: Text('Bilow shaqada'),
                   ),
                 if (item!['status'] == 'InProgress')
                   FilledButton(
                     onPressed: busy ? null : () => act('complete'),
-                    child: const Text('Shaqada waa dhammaatay'),
+                    child: Text('Shaqada waa dhammaatay'),
                   ),
               ] else if ([
                 'Received',
@@ -1233,18 +1297,18 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                           final yes = await showDialog<bool>(
                             context: c,
                             builder: (ctx) => AlertDialog(
-                              title: const Text('Jooji dalabka?'),
-                              content: const Text(
+                              title: Text('Jooji dalabka?'),
+                              content: Text(
                                 'Ma hubtaa inaad joojinayso dalabkan?',
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text('Maya'),
+                                  child: Text('Maya'),
                                 ),
                                 FilledButton(
                                   onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Haa, jooji'),
+                                  child: Text('Haa, jooji'),
                                 ),
                               ],
                             ),
@@ -1253,7 +1317,7 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                             await act('cancel');
                           }
                         },
-                  child: const Text('Jooji dalabka'),
+                  child: Text('Jooji dalabka'),
                 ),
             ],
           ),

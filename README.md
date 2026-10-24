@@ -124,3 +124,7 @@ A responsive navy-and-orange DANXALIYE service-request interface based on the la
 Use `docs/implementation-status.md` for the remaining scope. In particular, contact verification and recovery delivery, image uploads, push notifications, administrator MFA enforcement, richer scheduling, support/privacy workflows and operational hardening require work before public launch. No payment gateway is included; customers pay professionals directly.
 
 Persist Identity data-protection keys across restarts and replicas. Terminate HTTPS at a trusted reverse proxy, configure forwarded headers for that proxy, use least-privilege database credentials and a deliberate migration deployment step, configure backups and monitoring, and validate the runtime/provider versions before deployment.
+
+### Accounts and configurable administration
+
+Email registration and login are available on web and mobile. Administrators can manage branding, products, services and users at `/Manage/Settings`. See [administration setup](docs/admin-settings.md) for first-admin provisioning, supported settings and verification.

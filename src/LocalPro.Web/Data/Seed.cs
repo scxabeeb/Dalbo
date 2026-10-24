@@ -7,7 +7,7 @@ public static class Seed {
  public static async Task Run(IServiceProvider services,bool demo,string? password){
  var db=services.GetRequiredService<AppDbContext>();await db.Database.MigrateAsync();
  if(!await db.Categories.AnyAsync()){db.Categories.AddRange(new Category{Name="Electrical",Icon="ϟ"},new Category{Name="Plumbing",Icon="◉"},new Category{Name="Air conditioning",Icon="❄"},new Category{Name="Refrigeration",Icon="▤"});await db.SaveChangesAsync();}
- await ServiceCatalog.Sync(db);
+ if(!await db.SiteSettings.AnyAsync()){await ServiceCatalog.Sync(db);db.SiteSettings.Add(new());await db.SaveChangesAsync();}
  var roles=services.GetRequiredService<RoleManager<IdentityRole>>();if(!await roles.RoleExistsAsync("Admin"))await roles.CreateAsync(new("Admin"));
  var users=services.GetRequiredService<UserManager<AppUser>>();
  if(!demo)return;if(string.IsNullOrWhiteSpace(password))throw new InvalidOperationException("Set DemoPassword via environment variable when SeedDemo=true.");
