@@ -1,6 +1,6 @@
 # iOS simulator
 
-DANXALIYE was launched successfully on the dedicated **DANXALIYE iPhone** (iPhone 16 Pro, iOS 18.6). Its UUID on this Mac is `30A7D6C2-0A4F-4DA3-A9E4-FFDD4FCC2577`.
+CTC DALBO was launched successfully on the dedicated **CTC DALBO iPhone** (iPhone 16 Pro, iOS 18.6). Its UUID on this Mac is `30A7D6C2-0A4F-4DA3-A9E4-FFDD4FCC2577`.
 
 The backend must be running at `http://localhost:5080`. Run `scripts/run-web.sh` first if needed.
 

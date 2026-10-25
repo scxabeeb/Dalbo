@@ -9,7 +9,7 @@ void main() {
         home: Scaffold(body: SignInPanel(onSignedIn: () {})),
       ),
     );
-    expect(find.text('Ku soo dhowow DANXALIYE.'), findsOneWidget);
+    expect(find.text('Ku soo dhowow CTC DALBO.'), findsOneWidget);
     expect(find.text('Soo gal ama isdiiwaangeli ↗'), findsOneWidget);
   });
   test('API timestamps are displayed consistently in East Africa Time', () {

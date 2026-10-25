@@ -2,8 +2,8 @@ using System.ComponentModel.DataAnnotations;
 namespace LocalPro.Web.Domain;
 public class SiteSettings {
  public int Id { get; set; } = 1;
- [Required, MaxLength(80)] public string AppName { get; set; } = "DANXALIYE";
- [MaxLength(160)] public string Tagline { get; set; } = "Baahidaada, Xalkeeda.";
+ [Required, MaxLength(80)] public string AppName { get; set; } = "CTC DALBO";
+ [MaxLength(160)] public string Tagline { get; set; } = "Adeegga aad rabto, halka aad joogto.";
  [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string PrimaryColor { get; set; } = "#0e305d";
  [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string AccentColor { get; set; } = "#ff6b0b";
  [Required, MaxLength(80)] public string City { get; set; } = "Garowe";

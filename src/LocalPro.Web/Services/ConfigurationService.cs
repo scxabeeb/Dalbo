@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LocalPro.Web.Services;
 public class ConfigurationService(AppDbContext db) {
  public async Task<SiteSettings> Get() => await db.SiteSettings.AsNoTracking().SingleOrDefaultAsync(s => s.Id == 1) ?? new();
- public static object Public(SiteSettings s) => new { s.AppName, s.Tagline, s.PrimaryColor, s.AccentColor, s.City, s.HeroTitle, s.HeroDescription, s.ContactEmail, s.ContactPhone, s.Currency, s.RegistrationEnabled, s.ProductsEnabled, logoUrl = s.Logo == null ? "/brand/danxaliye-logo.png" : $"/api/settings/logo?v={s.UpdatedUtc.Ticks}" };
+ public static object Public(SiteSettings s) => new { s.AppName, s.Tagline, s.PrimaryColor, s.AccentColor, s.City, s.HeroTitle, s.HeroDescription, s.ContactEmail, s.ContactPhone, s.Currency, s.RegistrationEnabled, s.ProductsEnabled, logoUrl = s.Logo == null ? "/brand/ctc-dalbo-logo.png" : $"/api/settings/logo?v={s.UpdatedUtc.Ticks}" };
  public static async Task<(byte[] Bytes, string Type)> ReadImage(IFormFile file) {
   if(file.Length == 0 || file.Length > 2 * 1024 * 1024) throw new RuleException("Choose a PNG or JPEG image up to 2 MB.");
   using var stream = new MemoryStream(); await file.CopyToAsync(stream); var bytes = stream.ToArray();

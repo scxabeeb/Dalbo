@@ -4,8 +4,8 @@ import 'api.dart';
 class AppBrand {
   final Map<String, dynamic> data;
   AppBrand([this.data = const {}]);
-  String get name => data['appName'] ?? 'DANXALIYE';
-  String get tagline => data['tagline'] ?? 'Baahidaada, Xalkeeda.';
+  String get name => data['appName'] ?? 'CTC DALBO';
+  String get tagline => data['tagline'] ?? 'Adeegga aad rabto, halka aad joogto.';
   String get city => data['city'] ?? 'Garowe';
   String get heroTitle => data['heroTitle'] ?? 'Maxaad u baahan tahay maanta?';
   String get heroDescription =>

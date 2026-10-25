@@ -14,23 +14,44 @@ class DanxaliyeBrand extends StatelessWidget {
   @override
   Widget build(BuildContext c) {
     Widget fallback() => Image.asset(
-      'assets/brand/danxaliye-logo.png',
+      'assets/brand/ctc-dalbo-logo.png',
       width: 120,
       height: 60,
       fit: BoxFit.contain,
       semanticLabel: appBrand.value.name,
     );
     final path = appBrand.value.logoUrl;
-    return path == null
+    final logo = path == null
         ? fallback()
         : Image.network(
             '${Api.base}$path',
-            width: 120,
+            width: 60,
             height: 60,
             fit: BoxFit.contain,
             semanticLabel: appBrand.value.name,
             errorBuilder: (c, e, s) => fallback(),
           );
+    return SizedBox(
+      width: 180,
+      height: 64,
+      child: Row(
+        children: [
+          SizedBox(width: 60, height: 60, child: logo),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              appBrand.value.name,
+              maxLines: 2,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: appBrand.value.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
