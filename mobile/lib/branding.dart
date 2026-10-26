@@ -6,7 +6,7 @@ class AppBrand {
   AppBrand([this.data = const {}]);
   String get name => data['appName'] ?? 'CTC DALBO';
   String get tagline => data['tagline'] ?? 'Adeegga aad rabto, halka aad joogto.';
-  String get city => data['city'] ?? 'Garowe';
+  String get city => data['city'] ?? 'Somalia';
   String get heroTitle => data['heroTitle'] ?? 'Maxaad u baahan tahay maanta?';
   String get heroDescription =>
       data['heroDescription'] ?? 'Farsamoyaqaan albaabkaaga kuugu yimaada.';

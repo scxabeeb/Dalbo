@@ -6,7 +6,7 @@ public class SiteSettings {
  [MaxLength(160)] public string Tagline { get; set; } = "Adeegga aad rabto, halka aad joogto.";
  [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string PrimaryColor { get; set; } = "#0e305d";
  [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string AccentColor { get; set; } = "#ff6b0b";
- [Required, MaxLength(80)] public string City { get; set; } = "Garowe";
+ [Required, MaxLength(80)] public string City { get; set; } = "Somalia";
  [MaxLength(160)] public string HeroTitle { get; set; } = "Maxaad u baahan tahay maanta?";
  [MaxLength(300)] public string HeroDescription { get; set; } = "Farsamoyaqaan albaabkaaga kuugu yimaada.";
  [EmailAddress, MaxLength(200)] public string? ContactEmail { get; set; }

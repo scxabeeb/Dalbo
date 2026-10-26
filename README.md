@@ -1,6 +1,6 @@
 # CTC DALBO
 
-A local professional services marketplace built with **ASP.NET Core Razor Pages**, a shared **ASP.NET Core API**, **Flutter** for Android/iOS, and **MySQL through EF Core/Pomelo**. The service-request launch area is Garowe, Puntland, with USD estimates and East Africa Time (UTC+3).
+A local professional services marketplace built with **ASP.NET Core Razor Pages**, a shared **ASP.NET Core API**, **Flutter** for Android/iOS, and **MySQL through EF Core/Pomelo**. The default service area is Somalia, with USD estimates and East Africa Time (UTC+3).
 
 This is a functional development version, with real database persistence. It is not yet the complete production release described by the source brief. The feature matrix below records the implementation boundary explicitly.
 

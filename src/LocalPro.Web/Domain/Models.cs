@@ -7,7 +7,7 @@ public class Professional {
  public int Id {get;set;} public string UserId {get;set;}=""; public AppUser User {get;set;}=null!;
  public int CategoryId {get;set;} public Category Category {get;set;}=null!;
  [MaxLength(100)] public string Name {get;set;}="";
- [MaxLength(100)] public string City {get;set;}="Garowe";
+ [MaxLength(100)] public string City {get;set;}="Somalia";
  [MaxLength(100)] public string Neighborhood {get;set;}="";
  [MaxLength(2000)] public string Bio {get;set;}="";
  [MaxLength(30)] public string Phone {get;set;}="";
@@ -43,7 +43,7 @@ public class ServiceRequest {
  public int? ProfessionalId {get;set;} public Professional? Professional {get;set;}
  [MaxLength(2000)]public string Description {get;set;}="";
  [MaxLength(300)]public string Address {get;set;}="";
- [MaxLength(80)]public string City {get;set;}="Garowe";
+ [MaxLength(80)]public string City {get;set;}="Somalia";
  [MaxLength(12)]public string When {get;set;}="Now";
  public DateTime RequestedDateUtc {get;set;}
  [MaxLength(20)]public string PaymentPreference {get;set;}="MobileMoney";
