@@ -31,3 +31,15 @@ Registration may be disabled without preventing existing users from signing in o
 Build with `dotnet build src/LocalPro.Web`. Analyze mobile with `flutter analyze` inside `mobile/`.
 
 Run `tests/configuration_test.py` only against a disposable, demo-seeded MySQL database. Set `LOCALPRO_URL` and `LOCALPRO_PASSWORD` to its URL and demo password. Tests cover email registration/login, authorization and CSRF, branding and image validation, product editing/archiving, registration controls, service edits and admin-created accounts. Never point these mutation tests at a production database.
+
+## Importing dispatch providers without email addresses
+
+Store provider data in an ignored local file under `src/LocalPro.Web/App_Data/imports/`. Each JSON row contains `name`, the exact existing service `category`, `phone`, `city`, and optional `notes`. Do not commit contact lists to Git.
+
+```sh
+ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/LocalPro.Web --no-launch-profile -- --import-professionals=/absolute/path/providers.json
+```
+
+The command creates dispatch-approved profiles and email-less, password-less account records, then exits. It does not invent email addresses, passwords, rates or experience. The standard profile defaults for rate/experience are unset values (zero); imported biographies indicate that these details and working hours require confirmation. Professionals need their real email and normal account onboarding before signing in. Imported accounts are members, never administrators.
+
+Exact name/phone/category matches are skipped on subsequent runs. Conflicting existing name/phone entries stop the entire batch without saving partial changes. The normal public registration email policy is unchanged. Imported contact details remain restricted to administrators and clients assigned to that professional.

@@ -64,6 +64,9 @@ api.MapPost("/service-requests/{id:int}/action",async(int id,RequestActionInput 
 api.MapGet("/service-requests/{id:int}/photo",async(int id,ClaimsPrincipal u,RequestService service,HttpContext context)=>{var p=await service.Photo(u,id);context.Response.Headers.CacheControl="private, no-store";return Results.File(p.Bytes,p.Type);});
 app.MapGet("/health",()=>Results.Ok(new{status="ok"}));
 await using(var scope=app.Services.CreateAsyncScope()){await Seed.Run(scope.ServiceProvider,app.Environment.IsDevelopment()&&builder.Configuration.GetValue<bool>("SeedDemo"),builder.Configuration["DemoPassword"]);}
+if(builder.Configuration["import-professionals"] is string importPath){
+ await using var scope=app.Services.CreateAsyncScope();var result=await ProfessionalImport.Run(scope.ServiceProvider,importPath);Console.WriteLine($"Professional import complete: {result.Added} added, {result.Skipped} existing profiles skipped. No passwords or email addresses were generated.");return;
+}
 if(builder.Configuration["grant-admin"] is string adminEmail){
  await using var scope=app.Services.CreateAsyncScope();var users=scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();var user=await users.FindByEmailAsync(adminEmail.Trim());if(user==null)throw new InvalidOperationException("Register the administrator email before granting access.");var result=await users.AddToRoleAsync(user,"Admin");if(!result.Succeeded&&!await users.IsInRoleAsync(user,"Admin"))throw new InvalidOperationException("Unable to grant administrator access.");await users.UpdateSecurityStampAsync(user);var db=scope.ServiceProvider.GetRequiredService<AppDbContext>();db.AuditEvents.Add(new(){ActorId="local-administrator",Action=$"Granted administrator access to {user.Email}"});await db.SaveChangesAsync();Console.WriteLine("Administrator access granted. Sign out and sign in again.");return;
 }
