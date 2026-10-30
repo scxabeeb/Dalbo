@@ -16,3 +16,14 @@ Server=${{MySQL.MYSQLHOST}};Port=${{MySQL.MYSQLPORT}};Database=${{MySQL.MYSQLDAT
 7. Add Google/Facebook/Apple credentials as service secrets and register the generated HTTPS callback URLs; see `social-sign-in.md`.
 
 Deployment healthcheck is `/health`. Database migration failure prevents startup. Keep the MySQL database and web volume when redeploying. Never copy `appsettings.Local.json`, private imports, credentials, or a local database dump into the image.
+
+## Active deployment
+
+- Project: `ctcdalbo` (`53a64bab-8252-4eb2-946d-626eb18f82f3`).
+- Public web/API: https://ctcdalbo-production.up.railway.app
+- Web service: `ctcdalbo`; database: `MySQL`.
+- Persistent web volume: `/app/App_Data`.
+- Source: GitHub `scxabeeb/Dalbo`, branch `main`.
+- APK package directory: `ctcdalbo/`; rebuild using `scripts/build-ctcdalbo-apk.sh` with the public URL.
+
+The initial hosted database contains the service catalog and branding defaults. Local accounts and imported professional records were not copied to production.

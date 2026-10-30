@@ -20,3 +20,6 @@ releases/
 **/appsettings.Local.json
 
 **/__pycache__/
+
+/ctcdalbo/*.apk
+/ctcdalbo/*.sha256
