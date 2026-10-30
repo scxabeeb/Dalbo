@@ -1,3 +1,4 @@
-﻿@{
-    Layout = "_Layout";
+@{
+ var path=Context.Request.Path;
+ Layout=User.IsInRole("Admin")&&(path.StartsWithSegments("/Manage")||path=="/Dispatch"||path=="/Admin")?"_AdminLayout":"_Layout";
 }

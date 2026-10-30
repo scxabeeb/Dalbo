@@ -9,6 +9,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options):IdentityDbCont
  public DbSet<ServiceRequest> ServiceRequests=>Set<ServiceRequest>();public DbSet<ServiceRequestEvent> ServiceRequestEvents=>Set<ServiceRequestEvent>();
  public DbSet<SiteSettings> SiteSettings=>Set<SiteSettings>(); public DbSet<Product> Products=>Set<Product>();
  protected override void OnModelCreating(ModelBuilder b){base.OnModelCreating(b);
+ b.Entity<ServiceInvoice>().Property(i=>i.Total).HasPrecision(12,2);
+ b.Entity<ServiceInvoice>().HasIndex(i=>i.ServiceRequestId).IsUnique();
+ b.Entity<ServiceInvoice>().Ignore(i=>i.Paid).Ignore(i=>i.Balance).Ignore(i=>i.Status);
+ b.Entity<ServiceInvoice>().HasOne(i=>i.ServiceRequest).WithMany().HasForeignKey(i=>i.ServiceRequestId).OnDelete(DeleteBehavior.Restrict);
+ b.Entity<ServicePayment>().Property(p=>p.Amount).HasPrecision(12,2);
+ b.Entity<ServicePayment>().HasIndex(p=>p.IdempotencyKey).IsUnique();
+ b.Entity<ServicePayment>().HasOne(p=>p.ServiceInvoice).WithMany(i=>i.Payments).HasForeignKey(p=>p.ServiceInvoiceId).OnDelete(DeleteBehavior.Restrict);
  b.Entity<Product>().Property(p=>p.Price).HasPrecision(12,2);
  b.Entity<Category>().Property(c=>c.VisitFee).HasPrecision(10,2);
  b.Entity<ServiceRequest>().Property(c=>c.VisitFee).HasPrecision(10,2);

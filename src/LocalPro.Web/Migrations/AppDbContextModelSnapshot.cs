@@ -453,6 +453,93 @@ namespace LocalPro.Web.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("LocalPro.Web.Domain.ServiceInvoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<int>("ServiceRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<bool>("Voided")
+                        .HasColumnType("tinyint(1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceRequestId")
+                        .IsUnique();
+
+                    b.ToTable("ServiceInvoice");
+                });
+
+            modelBuilder.Entity("LocalPro.Web.Domain.ServicePayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime>("ReceivedUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("RecordedById")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("ServiceInvoiceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique();
+
+                    b.HasIndex("ServiceInvoiceId");
+
+                    b.ToTable("ServicePayment");
+                });
+
             modelBuilder.Entity("LocalPro.Web.Domain.ServiceRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -876,6 +963,28 @@ namespace LocalPro.Web.Migrations
                     b.Navigation("Professional");
                 });
 
+            modelBuilder.Entity("LocalPro.Web.Domain.ServiceInvoice", b =>
+                {
+                    b.HasOne("LocalPro.Web.Domain.ServiceRequest", "ServiceRequest")
+                        .WithMany()
+                        .HasForeignKey("ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServiceRequest");
+                });
+
+            modelBuilder.Entity("LocalPro.Web.Domain.ServicePayment", b =>
+                {
+                    b.HasOne("LocalPro.Web.Domain.ServiceInvoice", "ServiceInvoice")
+                        .WithMany("Payments")
+                        .HasForeignKey("ServiceInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServiceInvoice");
+                });
+
             modelBuilder.Entity("LocalPro.Web.Domain.ServiceRequest", b =>
                 {
                     b.HasOne("LocalPro.Web.Domain.Category", "Category")
@@ -967,6 +1076,11 @@ namespace LocalPro.Web.Migrations
             modelBuilder.Entity("LocalPro.Web.Domain.Professional", b =>
                 {
                     b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("LocalPro.Web.Domain.ServiceInvoice", b =>
+                {
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("LocalPro.Web.Domain.ServiceRequest", b =>

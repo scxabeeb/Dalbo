@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api.dart';
 import 'branding.dart';
+import 'payments.dart';
 import 'main.dart';
 
 class DanxaliyeBrand extends StatelessWidget {
@@ -1258,6 +1259,14 @@ class _ServiceTrackingState extends State<ServiceTracking> {
                 'Lacag bixinta: ${item!['paymentPreference'] == 'Cash' ? 'Lacag caddaan' : 'Mobile Money'} (doorbid keliya)',
                 style: TextStyle(color: muted, fontSize: 11),
               ),
+              if (item!['customerId'] == api.me?['id'] ||
+                  api.me?['isAdmin'] == true)
+                OutlinedButton.icon(
+                  onPressed: () =>
+                      open(c, ServiceInvoiceScreen(requestId: widget.id)),
+                  icon: Icon(Icons.receipt_long_outlined),
+                  label: Text('Invoice & payments'),
+                ),
               if (item!['hasPhoto'])
                 TextButton.icon(
                   onPressed: showPhoto,

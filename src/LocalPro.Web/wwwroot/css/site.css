@@ -3,3 +3,5 @@
 
 /* Supplied Dalbo identity: navy provides readable text; orange is the brand accent. */
 .brand-logo{display:block;object-fit:contain;width:158px;height:auto}.brand{letter-spacing:normal}.hero h1 em{color:#b64500}.pulse{background:var(--accent)}.btn.cream{color:#16202e}.category.active{border-color:#ff6a13}.category-icon{color:#b64500}.pro-category{color:#a83f00}.join-banner{background:#16202e}.join-banner .eyebrow{color:#ffbb90}.header .brand{flex-shrink:0}footer .brand-logo{width:140px}.hero-art .house{filter:drop-shadow(0 20px 22px #16202e18)}@media(max-width:700px){.header .brand-logo{width:125px}}
+
+.invoice-page{max-width:850px}.invoice-id{font-size:11px;letter-spacing:1.5px;color:#7e8da1}.payment-summary{display:flex;justify-content:space-between;gap:18px;border-top:1px solid var(--line);margin-top:20px;padding-top:18px;font-size:12px;flex-wrap:wrap}.payment-summary strong{display:block;font-size:21px;margin-top:5px}.receipt-line{padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:20px}.receipt-line small{display:block;color:#7b8a9e}
