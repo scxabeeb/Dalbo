@@ -7,18 +7,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 var builder=WebApplication.CreateBuilder(args);
 if(builder.Environment.IsDevelopment())builder.Configuration.AddJsonFile("appsettings.Local.json",optional:true,reloadOnChange:false).AddEnvironmentVariables().AddCommandLine(args);
-builder.Services.AddRazorPages(o=>{o.Conventions.AuthorizeFolder("/Account");o.Conventions.AllowAnonymousToPage("/Account/Login");o.Conventions.AllowAnonymousToPage("/Account/Register");});
+builder.Services.AddRazorPages(o=>{o.Conventions.AuthorizeFolder("/Account");o.Conventions.AllowAnonymousToPage("/Account/Login");o.Conventions.AllowAnonymousToPage("/Account/Register");o.Conventions.AllowAnonymousToPage("/Account/Social");});
 builder.Services.AddDbContext<AppDbContext>(o=>o.UseMySql(builder.Configuration.GetConnectionString("Default"),new MySqlServerVersion(new Version(8,4,0))));
 builder.Services.AddIdentityApiEndpoints<AppUser>(o=>{o.Password.RequiredLength=10;o.User.RequireUniqueEmail=true;o.Lockout.MaxFailedAccessAttempts=5;}).AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddAuthentication(o=>{o.DefaultChallengeScheme=IdentityConstants.ApplicationScheme;o.DefaultForbidScheme=IdentityConstants.ApplicationScheme;});
 builder.Services.Configure<SecurityStampValidatorOptions>(o=>o.ValidationInterval=TimeSpan.Zero);
 builder.Services.ConfigureApplicationCookie(o=>{o.LoginPath="/Account/Login";o.Cookie.HttpOnly=true;o.Cookie.SameSite=SameSiteMode.Lax;o.AccessDeniedPath="/Denied";});
+builder.Services.AddSocialAuth(builder.Configuration);
 builder.Services.AddHttpContextAccessor();builder.Services.AddScoped<ConfigurationService>();builder.Services.AddScoped<Marketplace>();builder.Services.AddScoped<RequestService>();
 builder.WebHost.ConfigureKestrel(o=>o.Limits.MaxRequestBodySize=5*1024*1024);
-builder.Services.AddRateLimiter(o=>{o.RejectionStatusCode=429;o.AddPolicy("auth",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new(){PermitLimit=20,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));});
+builder.Services.AddRateLimiter(o=>{o.RejectionStatusCode=429;o.AddPolicy("social-poll",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new(){PermitLimit=60,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));o.AddPolicy("auth",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new(){PermitLimit=20,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));});
 var app=builder.Build();
 if(!app.Environment.IsDevelopment()){app.UseExceptionHandler("/Error");app.UseHsts();app.UseHttpsRedirection();}
-app.Use(async(ctx,next)=>{ctx.Response.Headers["X-Content-Type-Options"]="nosniff";ctx.Response.Headers["Referrer-Policy"]="same-origin";ctx.Response.Headers["Content-Security-Policy"]="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";try{await next();}catch(RuleException ex){if(ctx.Request.Path.StartsWithSegments("/api")){ctx.Response.StatusCode=400;await ctx.Response.WriteAsJsonAsync(new{error=ex.Message});}else throw;}});
+app.Use(async(ctx,next)=>{ctx.Response.Headers["X-Content-Type-Options"]="nosniff";ctx.Response.Headers["Referrer-Policy"]="same-origin";ctx.Response.Headers["Content-Security-Policy"]="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com https://www.facebook.com; base-uri 'self'";try{await next();}catch(RuleException ex){if(ctx.Request.Path.StartsWithSegments("/api")){ctx.Response.StatusCode=400;await ctx.Response.WriteAsJsonAsync(new{error=ex.Message});}else throw;}});
 app.UseStaticFiles();app.UseRouting();app.UseRateLimiter();app.UseAuthentication();app.UseAuthorization();app.UseAntiforgery();
 app.Use(async (ctx,next)=>{
  if(ctx.Request.Path.Equals("/api/auth/register",StringComparison.OrdinalIgnoreCase) && HttpMethods.IsPost(ctx.Request.Method) && !(await ctx.RequestServices.GetRequiredService<ConfigurationService>().Get()).RegistrationEnabled){ctx.Response.StatusCode=403;await ctx.Response.WriteAsJsonAsync(new{error="New account registration is currently closed."});return;}await next();
@@ -33,6 +34,7 @@ app.MapPost("/api/register",async(RegistrationInput input,UserManager<AppUser> u
  if(string.IsNullOrWhiteSpace(input.Name)||input.Name.Length>100||string.IsNullOrWhiteSpace(input.Email)||!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(input.Email)||input.Password!=input.ConfirmPassword||!input.Terms)return Results.BadRequest(new{error="Enter your name, a valid email, matching passwords and accept the terms."});
  var user=new AppUser{UserName=input.Email.Trim(),Email=input.Email.Trim(),DisplayName=input.Name.Trim()};var result=await users.CreateAsync(user,input.Password??"");return result.Succeeded?Results.Ok():Results.ValidationProblem(result.Errors.GroupBy(e=>e.Code).ToDictionary(g=>g.Key,g=>g.Select(e=>e.Description).ToArray()));
 }).RequireRateLimiting("auth");
+app.MapSocialAuth();
 app.MapRazorPages();app.MapGroup("/api/auth").MapIdentityApi<AppUser>().RequireRateLimiting("auth");
 app.MapGet("/api/categories",async(AppDbContext db)=>await db.Categories.AsNoTracking().Where(c=>c.Active).OrderBy(c=>c.SortOrder).ToListAsync());
 app.MapGet("/api/professionals",async(string? q,int? category,string? city,bool? available,Marketplace m)=>(await m.Search(q,category,city,available??false)).Select(PublicProfile)).RequireAuthorization(p=>p.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme,IdentityConstants.BearerScheme).RequireAuthenticatedUser());

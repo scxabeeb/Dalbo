@@ -1,0 +1,16 @@
+@page
+@model LocalPro.Web.Pages.Account.SocialModel
+@{ViewData["Title"]="Social sign-in";}
+<section class="auth panel">
+<h1>Social sign-in</h1>
+@if(Model.Error != null){<p role="alert" class="notice">@Model.Error</p>}
+else if(Model.Finished){<p>You’re signed in. Return to the mobile app to continue.</p>}
+else if(Model.Confirm){
+<p>Create your account using the name and email shared by your social provider.</p>
+<form method="post" asp-page-handler="Create"><label class="toggle-label"><input asp-for="Terms" required/> I accept the <a asp-page="/Privacy">terms and privacy policy</a>.</label><button class="btn full">Create account and continue</button></form>
+}else{
+<p>Continue securely with @Model.Provider. Your password stays with your provider.</p>
+<form method="post" asp-page-handler="Challenge"><input type="hidden" asp-for="Provider"/><input type="hidden" asp-for="Mobile"/><input type="hidden" asp-for="ReturnUrl"/><button class="btn full">Continue with @Model.Provider</button></form>
+}
+<p><a asp-page="Login">Sign in with email</a></p>
+</section>

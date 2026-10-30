@@ -1,0 +1,7 @@
+@inject Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider Schemes
+@{var providers=(await Schemes.GetAllSchemesAsync()).Where(s=>s.DisplayName!=null).ToList();}
+@if(providers.Count>0){
+<div class="social-signin"><p>Or continue with your social account</p>
+@foreach(var provider in providers){<a class="btn light full" asp-page="/Account/Social" asp-route-provider="@provider.Name" asp-route-returnUrl="@Context.Request.Query["ReturnUrl"]">Continue with @provider.DisplayName</a>}
+</div>
+}

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -101,6 +103,35 @@ class Api {
       ),
     );
     me = Map<String, dynamic>.from(await request('/me'));
+  }
+
+  Future<void> socialLogin(String provider, bool Function() cancelled) async {
+    final random = Random.secure();
+    final secret = base64UrlEncode(
+      List<int>.generate(32, (_) => random.nextInt(256)),
+    );
+    final started = await request(
+      '/social/mobile/start',
+      body: {'provider': provider, 'secret': secret},
+    );
+    final url = Uri.parse('$base${started['path']}');
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not open the sign-in browser.');
+    }
+    final deadline = DateTime.now().add(const Duration(minutes: 5));
+    while (DateTime.now().isBefore(deadline) && !cancelled()) {
+      await Future<void>.delayed(const Duration(seconds: 3));
+      if (cancelled()) return;
+      final result = await request(
+        '/social/mobile/complete',
+        body: {'ticket': started['ticket'], 'secret': secret},
+      );
+      if (result['pending'] == true) continue;
+      await saveTokens(result);
+      me = Map<String, dynamic>.from(await request('/me'));
+      return;
+    }
+    if (!cancelled()) throw Exception('Sign-in expired. Please try again.');
   }
 
   Future<void> logout() async {

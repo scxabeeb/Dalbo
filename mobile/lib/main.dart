@@ -668,6 +668,43 @@ class _AuthPageState extends State<AuthPage> {
       confirm = TextEditingController();
   bool register = false, busy = false, terms = false;
   String? error;
+  List<String> socialProviders = [];
+  @override
+  void initState() {
+    super.initState();
+    loadSocialProviders();
+  }
+
+  Future<void> loadSocialProviders() async {
+    try {
+      final providers = await api.request('/social/providers') as List;
+      if (mounted) {
+        setState(
+          () => socialProviders = providers
+              .map((p) => p['name'] as String)
+              .toList(),
+        );
+      }
+    } catch (_) {
+      // Email sign-in remains available when provider discovery is unavailable.
+    }
+  }
+
+  Future<void> socialSignIn(String provider) async {
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      await api.socialLogin(provider, () => !mounted);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) setState(() => error = e.toString());
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   @override
   void dispose() {
     name.dispose();
@@ -749,6 +786,18 @@ class _AuthPageState extends State<AuthPage> {
         SizedBox(height: 10),
         Text(appBrand.value.tagline, style: TextStyle(color: muted)),
         SizedBox(height: 30),
+        for (final provider in socialProviders) ...[
+          OutlinedButton(
+            onPressed: busy ? null : () => socialSignIn(provider),
+            child: Text('Continue with $provider'),
+          ),
+          SizedBox(height: 12),
+        ],
+        if (socialProviders.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(bottom: 20),
+            child: Text('Or sign in with email'),
+          ),
         if (register) ...[
           TextField(
             controller: name,
