@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Threading.RateLimiting;
 using LocalPro.Web.Data;
 using LocalPro.Web.Domain;
@@ -6,6 +8,14 @@ using LocalPro.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 var builder=WebApplication.CreateBuilder(args);
+if(int.TryParse(Environment.GetEnvironmentVariable("PORT"),out var railwayPort))builder.WebHost.UseUrls($"http://0.0.0.0:{railwayPort}");
+var onRailway=!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT_ID"));
+if(onRailway){
+ builder.Services.Configure<ForwardedHeadersOptions>(o=>{o.ForwardedHeaders=ForwardedHeaders.XForwardedFor|ForwardedHeaders.XForwardedProto;o.KnownNetworks.Clear();o.KnownProxies.Clear();});
+ var keys=Path.Combine(builder.Environment.ContentRootPath,"App_Data","keys");Directory.CreateDirectory(keys);
+ builder.Services.AddDataProtection().SetApplicationName("CTC-DALBO").PersistKeysToFileSystem(new DirectoryInfo(keys));
+}
+
 if(builder.Environment.IsDevelopment())builder.Configuration.AddJsonFile("appsettings.Local.json",optional:true,reloadOnChange:false).AddEnvironmentVariables().AddCommandLine(args);
 builder.Services.AddRazorPages(o=>{o.Conventions.AuthorizeFolder("/Account");o.Conventions.AllowAnonymousToPage("/Account/Login");o.Conventions.AllowAnonymousToPage("/Account/Register");o.Conventions.AllowAnonymousToPage("/Account/Social");});
 builder.Services.AddDbContext<AppDbContext>(o=>o.UseMySql(builder.Configuration.GetConnectionString("Default"),new MySqlServerVersion(new Version(8,4,0))));
@@ -18,6 +28,7 @@ builder.Services.AddHttpContextAccessor();builder.Services.AddScoped<Configurati
 builder.WebHost.ConfigureKestrel(o=>o.Limits.MaxRequestBodySize=5*1024*1024);
 builder.Services.AddRateLimiter(o=>{o.RejectionStatusCode=429;o.AddPolicy("social-poll",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new(){PermitLimit=60,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));o.AddPolicy("auth",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new(){PermitLimit=20,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));});
 var app=builder.Build();
+if(onRailway)app.UseForwardedHeaders();
 if(!app.Environment.IsDevelopment()){app.UseExceptionHandler("/Error");app.UseHsts();app.UseHttpsRedirection();}
 app.Use(async(ctx,next)=>{ctx.Response.Headers["X-Content-Type-Options"]="nosniff";ctx.Response.Headers["Referrer-Policy"]="same-origin";ctx.Response.Headers["Content-Security-Policy"]="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com https://www.facebook.com https://appleid.apple.com; base-uri 'self'";try{await next();}catch(RuleException ex){if(ctx.Request.Path.StartsWithSegments("/api")){ctx.Response.StatusCode=400;await ctx.Response.WriteAsJsonAsync(new{error=ex.Message});}else throw;}});
 app.UseStaticFiles();app.UseRouting();app.UseRateLimiter();app.UseAuthentication();app.UseAuthorization();app.UseAntiforgery();

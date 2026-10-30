@@ -1,8 +1,12 @@
+.git
 **/bin
 **/obj
-mobile
-.local
-.env
-.git
 **/App_Data
 **/appsettings.Local.json
+**/.env
+**/build
+**/.dart_tool
+mobile
+branding
+tests
+.dotnet_home
