@@ -1,6 +1,6 @@
 # Social sign-in: web and Flutter
 
-Google and Facebook sign-in share the ASP.NET Identity account store. Only configured providers appear on Login/Register and the Flutter account screen. Existing email/password login remains available. No database migration is required: Identity's existing AspNetUserLogins table stores provider links.
+Google, Facebook and Apple sign-in share the ASP.NET Identity account store. Only configured providers appear on Login/Register and the Flutter account screen. Existing email/password login remains available. No database migration is required: Identity's existing AspNetUserLogins table stores provider links.
 
 ## Configure credentials
 
@@ -39,3 +39,20 @@ Mobile opens the server flow in an external browser. A random 256-bit secret sta
 Build the ASP.NET project, run Flutter analysis/tests, and check that `/api/social/providers` returns no unconfigured providers. Test provider redirect generation with temporary non-production credentials. Full authorization requires genuine registered provider credentials and a consenting provider test account; it cannot be verified using placeholder IDs.
 
 References: [ASP.NET external authentication](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/), [Google OAuth web server flow](https://developers.google.com/identity/protocols/oauth2/web-server), [Facebook Login flow](https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/).
+
+## Sign in with Apple
+
+Apple is also supported by the same web and Flutter browser flow. Set these server-only values and restart:
+
+```
+Authentication__Apple__ClientId
+Authentication__Apple__ClientSecret
+```
+
+`ClientId` is your Apple **Services ID**, configured for Sign in with Apple and associated with a primary App ID in your Apple Developer account. Register your website domain and the exact HTTPS return URL `https://YOUR-DOMAIN/signin-apple`. Apple does not accept localhost/IP return URLs: use your deployed HTTPS domain for web and the mobile API_URL.
+
+`ClientSecret` is an **ES256-signed JWT**, not an Apple ID password. Generate it using your Sign in with Apple `.p8` private key, Key ID, Team ID and Services ID. Apple limits its lifetime to six months; rotate it before expiry. Keep the `.p8` key and JWT out of Git and Flutter. Use Railway service variables for production values.
+
+The backend uses Microsoft's OpenID Connect middleware and Apple's discovery/JWKS endpoints to validate token signatures, issuer, audience, expiration and nonce. Apple requires a cross-site form POST callback; correlation and nonce cookies use Secure/SameSite=None. Apple relay email addresses are supported. The signed email must be verified. Apple's optional first-login name form field is not trusted as identity data; the initial display name uses the email prefix and can be changed in the account profile. No native Flutter plugin or mobile secret is required: provider discovery automatically displays Apple when configured.
+
+Full Apple sign-in testing requires real Apple Developer credentials, a registered HTTPS return URL and an Apple test account. [Apple authorization documentation](https://developer.apple.com/documentation/signinwithapplerestapi/request-an-authorization-to-the-sign-in-with-apple-server.) and [Apple client-secret/token documentation](https://developer.apple.com/documentation/SigninwithAppleRESTAPI/Generate-and-validate-tokens).

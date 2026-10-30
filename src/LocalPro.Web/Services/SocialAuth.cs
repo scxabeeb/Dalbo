@@ -17,6 +17,44 @@ public static class SocialAuth
         services.AddAuthentication();
         services.AddMemoryCache();
         services.AddSingleton<MobileSocialSessions>();
+        var apple = config.GetSection("Authentication:Apple");
+        if (!string.IsNullOrWhiteSpace(apple["ClientId"]) && !string.IsNullOrWhiteSpace(apple["ClientSecret"]))
+        {
+            services.AddAuthentication().AddOpenIdConnect("Apple", "Apple", o =>
+            {
+                o.SignInScheme = IdentityConstants.ExternalScheme;
+                o.Authority = "https://appleid.apple.com";
+                o.ClientId = apple["ClientId"]!;
+                o.ClientSecret = apple["ClientSecret"]!;
+                o.CallbackPath = "/signin-apple";
+                o.ResponseType = "code";
+                o.ResponseMode = "form_post";
+                o.UsePkce = false;
+                o.SaveTokens = false;
+                o.GetClaimsFromUserInfoEndpoint = false;
+                o.Scope.Clear();
+                o.Scope.Add("openid");
+                o.Scope.Add("email");
+                o.Scope.Add("name");
+                // Apple posts across sites: nonce/correlation cookies must survive that POST.
+                o.CorrelationCookie.SameSite = SameSiteMode.None;
+                o.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+                o.NonceCookie.SameSite = SameSiteMode.None;
+                o.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+                o.Events.OnTokenValidated = ctx =>
+                {
+                    if (!string.Equals(ctx.Principal?.FindFirstValue("email_verified"), "true", StringComparison.OrdinalIgnoreCase))
+                        ctx.Fail("Apple must return a verified email address.");
+                    return Task.CompletedTask;
+                };
+                o.Events.OnRemoteFailure = ctx =>
+                {
+                    ctx.HandleResponse();
+                    ctx.Response.Redirect("/Account/Social?handler=Failed");
+                    return Task.CompletedTask;
+                };
+            });
+        }
         foreach (var provider in new[] { "Google", "Facebook" })
         {
             var section = config.GetSection($"Authentication:{provider}");
